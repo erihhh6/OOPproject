@@ -44,7 +44,14 @@ include(cmake/Options.cmake)
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${PROJECT_NAME}
     main.cpp
-    generated/src/Helper.cpp
+        generated/src/Plant.cpp
+        generated/include/Plant.h
+        generated/include/Garden.h
+        generated/src/Garden.cpp
+        generated/include/Achievement.h
+        generated/src/Achievement.cpp
+        generated/include/functions.h
+        generated/src/functions.cpp
 )
 
 include(cmake/CompilerFlags.cmake)
@@ -68,6 +75,6 @@ if(APPLE)
 endif()
 
 include(cmake/CopyHelper.cmake)
-copy_files(FILES tastatura.txt)
-# copy_files(FILES tastatura.txt config.json DIRECTORY images sounds)
+copy_files(FILES input.txt)
+# copy_files(FILES input.txt config.json DIRECTORY images sounds)
 # copy_files(DIRECTORY images sounds)
