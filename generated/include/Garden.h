@@ -23,6 +23,9 @@ public:
     /// Function to update all plants and remove dead ones.
     void updatePlants();
 
+    /// Function to calculate health index for a plant in a given slot
+    double calculateHealthIndex(int slot) const;
+
     /// Check if a specific slot is empty.
     [[nodiscard]] bool isSlotEmpty(int slot) const;
 
@@ -30,4 +33,4 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Garden& garden);
 };
 
-#endif // GARDEN_H
+#endif /// GARDEN_H

@@ -51,10 +51,121 @@ Exotic::Exotic(const std::string& name, int water, int fertilizer, int light)
         : Plant(name, water, fertilizer, light) {}
 
 Lavender::Lavender() : Flowering("Lavender", 30, 20, 70) {}
+
+std::shared_ptr<Plant> Lavender::clone() const {
+    return std::make_shared<Lavender>(*this);
+}
+
+double Lavender::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.1 * lightRatio) * 100;
+}
+
 Orchid::Orchid() : Flowering("Orchid", 80, 50, 50) {}
+
+std::shared_ptr<Plant> Orchid::clone() const {
+    return std::make_shared<Orchid>(*this);
+}
+
+double Orchid::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return (0.5 * waterRatio + 0.2 * fertilizerRatio + 0.3 * lightRatio) * 100;
+}
+
 Hibiscus::Hibiscus() : Tropical("Hibiscus", 70, 30, 80) {}
+
+std::shared_ptr<Plant> Hibiscus::clone() const {
+    return std::make_shared<Hibiscus>(*this);
+}
+
+double Hibiscus::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.3 * lightRatio) * 100;
+}
+
 Lily::Lily() : Tropical("Lily", 65, 40, 85) {}
+
+std::shared_ptr<Plant> Lily::clone() const {
+    return std::make_shared<Lily>(*this);
+}
+
+double Lily::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.2 * lightRatio) * 100;
+}
+
 AloeVera::AloeVera() : Cacti("AloeVera", 20, 5, 80) {}
+
+std::shared_ptr<Plant> AloeVera::clone() const {
+    return std::make_shared<AloeVera>(*this);
+}
+
+double AloeVera::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return(0.5*waterRatio+0.2*fertilizerRatio+0.3*lightRatio)*100;
+}
+
 Cactus::Cactus() : Cacti("Cactus", 10, 5, 90) {}
+
+std::shared_ptr<Plant> Cactus::clone() const {
+    return std::make_shared<Cactus>(*this);
+}
+
+double Cactus::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return(0.5*waterRatio+0.2*fertilizerRatio+0.1*lightRatio)*100;
+}
+
 Flytrap::Flytrap() : Exotic("Flytrap", 30, 30, 30) {}
+
+std::shared_ptr<Plant> Flytrap::clone() const {
+    return std::make_shared<Flytrap>(*this);
+}
+
+double Flytrap::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return(0.4*waterRatio+0.4*fertilizerRatio+0.3*lightRatio)*100;
+}
+
 Bonsai::Bonsai() : Exotic("Bonsai", 30, 50, 30) {}
+
+std::shared_ptr<Plant> Bonsai::clone() const {
+    return std::make_shared<Bonsai>(*this);
+}
+
+double Bonsai::calculateHealthIndex() const {
+
+    double const waterRatio = calculateWaterRatio();
+    double const fertilizerRatio = calculateFertilizerRatio();
+    double const lightRatio = calculateLightRatio();
+
+    return(0.4*waterRatio+0.2*fertilizerRatio+0.2*lightRatio)*100;
+}

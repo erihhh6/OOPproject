@@ -6,12 +6,16 @@
 
 class Achievement {
 private:
+    int totalPlantsAdded;
     int totalPlantsCared;
     int daysSurvived;
 
 public:
     /// Constructor to initialize achievements
     Achievement();
+
+    /// Increment the number of plants added
+    void incrementPlantsAdded();
 
     /// Increment the number of plants cared for
     void incrementPlantsCared();
@@ -23,4 +27,4 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Achievement& achievement);
 };
 
-#endif // ACHIEVEMENT_H
+#endif /// ACHIEVEMENT_H

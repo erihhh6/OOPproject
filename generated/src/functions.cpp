@@ -105,3 +105,20 @@ void addPlant(Garden& garden, std::istream& input) {
         }
     }
 }
+
+void calculateHealthIndex(const Garden& garden, std::istream& input) {
+    int slot;
+    while (true) {
+        std::cout << "Choose a slot of a plant you want to check (0-7): ";
+        if (!getIntInput(input, slot)) continue;
+
+        if (slot >= 0 && slot < 8) {
+            if (!garden.isSlotEmpty(slot)) break;
+            std::cout << "There is no plant in this slot. Returning to menu.\n";
+            return;
+        }
+        std::cout << "Slot is invalid. Please choose a slot between 0 and 7.\n";
+    }
+    double healthIndex = garden.calculateHealthIndex(slot);
+    std::cout << "Health Index of Plant in Slot " << slot << ": " << healthIndex << "%\n";
+}

@@ -8,25 +8,12 @@ Garden::Garden() {
 }
 
 void Garden::addPlant(const std::shared_ptr<Plant>& plant,const int slot) {
-    if (slot >= 0 && slot < capacity && !slots[slot]) {
-        slots[slot] = plant;
-        std::cout << "Plant " << plant->getName()
-                  << " has been added to slot "
-                  << slot << ".\n";
-    } else if (slots[slot]) {
-        std::cout << "Slot " << slot
-                  << " is already occupied!\n";
-    } else {
-        std::cout << "Slot is invalid!\n";
-    }
+        slots[slot] = plant->clone();
+        std::cout << "Plant " << plant->getName() << " has been added to slot " << slot << ".\n";
 }
 
 void Garden::careForPlant(const int slot,const int water,const int fertilizer,const int light) const {
-    if (slot >= 0 && slot < capacity && slots[slot]) {
         slots[slot]->care(water,fertilizer ,light);
-    } else {
-        std::cout <<"Invalid or empty slot!\n";
-    }
 }
 
 void Garden::updatePlants() {
@@ -38,12 +25,16 @@ void Garden::updatePlants() {
     }
 }
 
+double Garden::calculateHealthIndex(int const slot) const {
+        return slots[slot]->calculateHealthIndex();
+}
+
 bool Garden :: isSlotEmpty(const int slot )const { return slot>=0&&slot<capacity&&!slots[slot]; }
 
-std::ostream& operator<<(std::ostream& os, const Garden& g) {
-    for (int i = 0; i < g.capacity; ++i) {
-        if (g.slots[i]) {  // Check if slot is not null
-            os << "Slot " << i << ":\n" << *g.slots[i] << "\n";
+std::ostream& operator<<(std::ostream& os, const Garden& garden) {
+    for (int i = 0; i < Garden::capacity; ++i) {
+        if (garden.slots[i]) {
+            os << "Slot " << i << ":\n" << *garden.slots[i] << "\n";
         } else {
             os << "Slot " << i << ": empty\n";
         }
