@@ -7,7 +7,7 @@
 
 /// MAIN PROGRAM (THE GAME ITSELF)
 int main() {
-    std::ifstream inputFile("x.txt");
+    std::ifstream inputFile("input.txt");
     std::istream& input = inputFile.is_open() ? inputFile : std::cin;
 
     Garden garden;
@@ -22,7 +22,8 @@ int main() {
         std::cout << "4. Let day pass\n";
         std::cout << "5. Display achievements\n";
         std::cout << "6. Calculate Health Index of a Plant\n";
-        std::cout << "7. Exit\n";
+        std::cout << "7. Display plants needs\n";
+        std::cout << "8. Exit\n";
         std::cout << "Enter your choice: ";
 
         if (!getIntInput(input, choice)) continue;
@@ -34,10 +35,11 @@ int main() {
             case 4: garden.updatePlants(); achievements.incrementDaysSurvived(); break;
             case 5: std::cout << achievements; break;
             case 6: calculateHealthIndex(garden,input); break;
-            case 7: std::cout << "Exiting the game.\n"; break;
+            case 7: displaySelectedPlantNeeds(input); break;
+            case 8: std::cout << "Exiting the game.\n"; break;
             default: std::cout << "Invalid choice.\n";
         }
-    } while (choice != 7);
+    } while (choice != 8);
 
     return 0;
 }

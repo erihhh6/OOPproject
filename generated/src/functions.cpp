@@ -122,3 +122,58 @@ void calculateHealthIndex(const Garden& garden, std::istream& input) {
     double healthIndex = garden.calculateHealthIndex(slot);
     std::cout << "Health Index of Plant in Slot " << slot << ": " << healthIndex << "%\n";
 }
+
+void displaySelectedPlantNeeds(std::istream& input) {
+    int option;
+    std::cout << "Choose the type of plant you want to see details for:\n";
+    std::cout << "1. Lavender\n";
+    std::cout << "2. Orchid\n";
+    std::cout << "3. Hibiscus\n";
+    std::cout << "4. Lily\n";
+    std::cout << "5. AloeVera\n";
+    std::cout << "6. Cactus\n";
+    std::cout << "7. Flytrap\n";
+    std::cout << "8. Bonsai\n";
+    std::cout << "Enter option: ";
+    while (true) {
+        if (getIntInput(input, option)) {
+            switch (option) {
+                case 1: {
+                    Lavender lavender;
+                    return lavender.display();
+                }
+                case 2: {
+                    Orchid orchid;
+                    return orchid.display();
+                }
+                case 3: {
+                    Hibiscus hibiscus;
+                    return hibiscus.display();
+                }
+                case 4: {
+                    Lily lily;
+                    return lily.display();
+                }
+                case 5: {
+                    AloeVera aloeVera;
+                    return aloeVera.display();
+                }
+                case 6: {
+                    Cactus cactus;
+                    return cactus.display();
+                }
+                case 7: {
+                    Flytrap flytrap;
+                    return flytrap.display();
+                }
+                case 8: {
+                    Bonsai bonsai;
+                    return bonsai.display();
+                }
+                default:
+                    std::cout << "Invalid option! Please select a number between 1 and 8.\n";
+                break;
+            }
+        }
+    }
+}

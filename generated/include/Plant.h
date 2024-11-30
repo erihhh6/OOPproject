@@ -35,6 +35,10 @@ protected:
         return static_cast<double>(current_light) / light_needed;
     };
 
+    /// Pure virtual display method
+    virtual void doDisplay() const = 0;
+
+
 public:
     /// Virtual destructor to allow proper cleanup of derived classes
     virtual ~Plant() = default;
@@ -53,6 +57,11 @@ public:
 
     /// Pure virtual function to calculate health index
     virtual double calculateHealthIndex() const = 0;
+
+    /// Non-virtual interface
+    void display() const{
+        doDisplay();
+}
 
     /// Overloaded << operator to print plant details
     friend std::ostream& operator<<(std::ostream& os, const Plant& plant);
@@ -85,6 +94,8 @@ public:
     Lavender();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Orchid final : public Flowering {
@@ -92,6 +103,8 @@ public:
     Orchid();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Hibiscus final : public Tropical {
@@ -99,6 +112,8 @@ public:
     Hibiscus();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Lily final : public Tropical {
@@ -106,6 +121,8 @@ public:
     Lily();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class AloeVera final : public Cacti {
@@ -113,6 +130,8 @@ public:
     AloeVera();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Cactus final : public Cacti {
@@ -120,6 +139,8 @@ public:
     Cactus();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Flytrap final : public Exotic {
@@ -127,6 +148,8 @@ public:
     Flytrap();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 class Bonsai final : public Exotic {
@@ -134,6 +157,8 @@ public:
     Bonsai();
     std::shared_ptr<Plant> clone() const override;
     double calculateHealthIndex() const override;
+protected:
+    void doDisplay() const override;
 };
 
 #endif /// PLANT_H

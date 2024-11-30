@@ -65,6 +65,10 @@ double Lavender::calculateHealthIndex() const {
     return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.1 * lightRatio) * 100;
 }
 
+void Lavender::doDisplay() const {
+    std::cout<<"Lavender:\n"<<"Water needed : 30\n"<<"Fertilizer needed : 20\n"<<"Light needed : 70\n";
+}
+
 Orchid::Orchid() : Flowering("Orchid", 80, 50, 50) {}
 
 std::shared_ptr<Plant> Orchid::clone() const {
@@ -78,6 +82,10 @@ double Orchid::calculateHealthIndex() const {
     double const lightRatio = calculateLightRatio();
 
     return (0.5 * waterRatio + 0.2 * fertilizerRatio + 0.3 * lightRatio) * 100;
+}
+
+void Orchid::doDisplay() const {
+    std::cout<<"Orchid:\n"<<"Water needed : 80\n"<<"Fertilizer needed : 50\n"<<"Light needed : 50\n";
 }
 
 Hibiscus::Hibiscus() : Tropical("Hibiscus", 70, 30, 80) {}
@@ -95,6 +103,10 @@ double Hibiscus::calculateHealthIndex() const {
     return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.3 * lightRatio) * 100;
 }
 
+void Hibiscus::doDisplay() const {
+    std::cout<<"Hibiscus:\n"<<"Water needed : 70\n"<<"Fertilizer needed : 30\n"<<"Light needed : 80\n";
+}
+
 Lily::Lily() : Tropical("Lily", 65, 40, 85) {}
 
 std::shared_ptr<Plant> Lily::clone() const {
@@ -108,6 +120,10 @@ double Lily::calculateHealthIndex() const {
     double const lightRatio = calculateLightRatio();
 
     return (0.4 * waterRatio + 0.3 * fertilizerRatio + 0.2 * lightRatio) * 100;
+}
+
+void Lily::doDisplay() const {
+    std::cout<<"Lily:\n"<<"Water needed : 65\n"<<"Fertilizer needed : 40\n"<<"Light needed : 85\n";
 }
 
 AloeVera::AloeVera() : Cacti("AloeVera", 20, 5, 80) {}
@@ -125,6 +141,10 @@ double AloeVera::calculateHealthIndex() const {
     return(0.5*waterRatio+0.2*fertilizerRatio+0.3*lightRatio)*100;
 }
 
+void AloeVera::doDisplay() const {
+    std::cout<<"AloeVera:\n"<<"Water needed : 20\n"<<"Fertilizer needed : 5\n"<<"Light needed : 80\n";
+}
+
 Cactus::Cactus() : Cacti("Cactus", 10, 5, 90) {}
 
 std::shared_ptr<Plant> Cactus::clone() const {
@@ -138,6 +158,10 @@ double Cactus::calculateHealthIndex() const {
     double const lightRatio = calculateLightRatio();
 
     return(0.5*waterRatio+0.2*fertilizerRatio+0.1*lightRatio)*100;
+}
+
+void Cactus::doDisplay() const {
+    std::cout<<"Cactus:\n"<<"Water needed : 10\n"<<"Fertilizer needed : 5\n"<<"Light needed : 90\n";
 }
 
 Flytrap::Flytrap() : Exotic("Flytrap", 30, 30, 30) {}
@@ -155,6 +179,10 @@ double Flytrap::calculateHealthIndex() const {
     return(0.4*waterRatio+0.4*fertilizerRatio+0.3*lightRatio)*100;
 }
 
+void Flytrap::doDisplay() const {
+    std::cout<<"Flytrap:\n"<<"Water needed : 30\n"<<"Fertilizer needed : 30\n"<<"Light needed : 30\n";
+}
+
 Bonsai::Bonsai() : Exotic("Bonsai", 30, 50, 30) {}
 
 std::shared_ptr<Plant> Bonsai::clone() const {
@@ -168,4 +196,8 @@ double Bonsai::calculateHealthIndex() const {
     double const lightRatio = calculateLightRatio();
 
     return(0.4*waterRatio+0.2*fertilizerRatio+0.2*lightRatio)*100;
+}
+
+void Bonsai::doDisplay() const {
+    std::cout<<"Bonsai:\n"<<"Water needed : 30\n"<<"Fertilizer needed : 50\n"<<"Light needed : 30\n";
 }
