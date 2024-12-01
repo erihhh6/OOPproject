@@ -33,7 +33,7 @@ int main() {
             case 1: std::cout << garden; break;
             case 2: addPlant(garden,input); Achievement::incrementPlantsAdded(); break;
             case 3: careForPlant(garden,input); Achievement::incrementPlantsCared(); break;
-            case 4: garden.applyGeneralCare(achievements); break;
+            case 4: garden.applyGeneralCare(); break;
             case 5: garden.updatePlants(); Achievement::incrementDaysSurvived(); break;
             case 6: std::cout << achievements; break;
             case 7: calculateHealthIndex(garden,input); break;

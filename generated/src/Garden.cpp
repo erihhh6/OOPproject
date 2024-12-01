@@ -38,7 +38,7 @@ void Garden::careForPlant(const int slot,const int water,const int fertilizer,co
         slots[slot]->care(water,fertilizer ,light);
 }
 
-void Garden::applyGeneralCare(Achievement& achievements) const {
+void Garden::applyGeneralCare() const {
     for (int i = 0; i < capacity; ++i) {
         if (slots[i]) {
             if (const auto flowering = std::dynamic_pointer_cast<Flowering>(slots[i])) {

@@ -31,7 +31,7 @@ public:
     void careForPlant(int slot,int water,int fertilizer,int light) const;
 
     /// Function to apply general care to all plants by specific conditions
-    void applyGeneralCare(Achievement& achievements) const;
+    void applyGeneralCare() const;
 
     /// Function to update all plants and remove dead ones.
     void updatePlants();
