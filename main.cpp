@@ -4,6 +4,7 @@
 #include <Garden.h>
 #include <Achievement.h>
 #include <functions.h>
+#include <CustomExceptions.h>
 
 /// MAIN PROGRAM (THE GAME ITSELF)
 int main() {
@@ -27,19 +28,23 @@ int main() {
         std::cout << "9. Exit\n";
         std::cout << "Enter your choice: ";
 
-        if (!getIntInput(input, choice)) continue;
+        try {
+            if (!getIntInput(input, choice)) throw InvalidInputException();
 
-        switch (choice) {
-            case 1: std::cout << garden; break;
-            case 2: addPlant(garden,input); Achievement::incrementPlantsAdded(); break;
-            case 3: careForPlant(garden,input); Achievement::incrementPlantsCared(); break;
-            case 4: garden.applyGeneralCare(); break;
-            case 5: garden.updatePlants(); Achievement::incrementDaysSurvived(); break;
-            case 6: std::cout << achievements; break;
-            case 7: calculateHealthIndex(garden,input); break;
-            case 8: displaySelectedPlantNeeds(input); break;
-            case 9: std::cout << "Exiting the game.\n"; break;
-            default: std::cout << "Invalid choice.\n";
+            switch (choice) {
+                case 1: std::cout << garden; break;
+                case 2: addPlant(garden,input); Achievement::incrementPlantsAdded(); break;
+                case 3: careForPlant(garden,input); Achievement::incrementPlantsCared(); break;
+                case 4: garden.applyGeneralCare(); break;
+                case 5: garden.updatePlants(); Achievement::incrementDaysSurvived(); break;
+                case 6: std::cout << achievements; break;
+                case 7: calculateHealthIndex(garden,input); break;
+                case 8: displaySelectedPlantNeeds(input); break;
+                case 9: std::cout << "Exiting the game.\n"; break;
+                default: throw InvalidMenuOptionException();
+            }
+        }catch (const GameException& e) {
+            std::cerr << e.what() << '\n';
         }
     } while (choice != 9);
 

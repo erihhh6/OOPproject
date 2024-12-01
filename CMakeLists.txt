@@ -52,6 +52,7 @@ add_executable(${PROJECT_NAME}
         generated/src/Achievement.cpp
         generated/include/functions.h
         generated/src/functions.cpp
+        generated/include/CustomExceptions.h
 )
 
 include(cmake/CompilerFlags.cmake)

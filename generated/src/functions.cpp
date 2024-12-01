@@ -1,6 +1,7 @@
 /// functions.cpp
 #include "functions.h"
 #include <limits>
+#include "CustomExceptions.h"
 
 bool getIntInput(std::istream& input, int& value) {
     input >> value;
@@ -49,15 +50,18 @@ void careForPlant(const Garden& garden, std::istream& input) {
     int slot;
 
     while (true) {
-        std::cout << "Choose a slot to care for the plant (0-7): ";
-        if (!getIntInput(input, slot)) continue;
+        try {
+            std::cout << "Choose a slot to care for the plant (0-7): ";
+            if (!getIntInput(input, slot)) throw InvalidInputException();
 
-        if (slot >= 0 && slot < 8) {
-            if (!garden.isSlotEmpty(slot)) break;
-            std::cout << "There is no plant in this slot. Returning to menu.\n";
-            return;
+            if (slot >= 0 && slot < 8) {
+                if (!garden.isSlotEmpty(slot)) break;
+                throw InvalidSlotException();
+            }
+            throw InvalidSlotException();
+        } catch (const GameException& e) {
+            std::cerr << e.what() << '\n';
         }
-        std::cout << "Slot is invalid. Please choose a slot between 0 and 7.\n";
     }
 
     int water, fertilizer, light;
