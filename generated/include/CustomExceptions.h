@@ -1,5 +1,6 @@
 #ifndef CUSTOMEXCEPTIONS_H
 #define CUSTOMEXCEPTIONS_H
+
 #include <exception>
 
 /// Base class for all custom exceptions
