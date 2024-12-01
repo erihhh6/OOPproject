@@ -6,22 +6,23 @@
 
 class Achievement {
 private:
-    int totalPlantsAdded;
-    int totalPlantsCared;
-    int daysSurvived;
+    /// Static member for cumulative tracking
+    static int totalPlantsAdded;
+    static int totalPlantsCared;
+    static int daysSurvived;
 
 public:
     /// Constructor to initialize achievements
-    Achievement();
+    Achievement() = default;
 
     /// Increment the number of plants added
-    void incrementPlantsAdded();
+    static void incrementPlantsAdded();
 
     /// Increment the number of plants cared for
-    void incrementPlantsCared();
+    static void incrementPlantsCared();
 
     /// Increment the number of days survived
-    void incrementDaysSurvived();
+    static void incrementDaysSurvived();
 
     /// Overloaded << operator to display achievements
     friend std::ostream& operator<<(std::ostream& os, const Achievement& achievement);

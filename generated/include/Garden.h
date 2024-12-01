@@ -4,6 +4,7 @@
 
 #include <memory>
 #include "Plant.h"
+#include "Achievement.h"
 
 class Garden {
 private:
@@ -14,11 +15,23 @@ public:
     /// Default constructor initializes all slots as empty
     Garden();
 
+    /// Copy constructor
+    Garden(const Garden& other);
+
+    /// Assignment operator using copy-and-swap idiom
+    Garden& operator=(Garden other);
+
+    /// Swap function
+    friend void swap(Garden& first, Garden& second) noexcept;
+
     /// Function to add a plant to a specific slot
     void addPlant(const std::shared_ptr<Plant>& plant,  int slot);
 
     /// Function to care for a specific plant in a slot
     void careForPlant(int slot,int water,int fertilizer,int light) const;
+
+    /// Function to apply general care to all plants by specific conditions
+    void applyGeneralCare(Achievement& achievements) const;
 
     /// Function to update all plants and remove dead ones.
     void updatePlants();
