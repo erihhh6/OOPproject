@@ -1,6 +1,7 @@
 /// functions.cpp
 #include "functions.h"
 #include <limits>
+#include <PlantFactory.h>
 #include "CustomExceptions.h"
 
 bool getIntInput(std::istream& input, int& value) {
@@ -30,14 +31,14 @@ std::shared_ptr<Plant> selectPlant(std::istream& input) {
     while (true) {
         if (getIntInput(input, option)) {
             switch (option) {
-                case 1: return std::make_shared<Lavender>();
-                case 2: return std::make_shared<Orchid>();
-                case 3: return std::make_shared<Hibiscus>();
-                case 4: return std::make_shared<Lily>();
-                case 5: return std::make_shared<AloeVera>();
-                case 6: return std::make_shared<Cactus>();
-                case 7: return std::make_shared<Flytrap>();
-                case 8: return std::make_shared<Bonsai>();
+                case 1: return PlantFactory::createPlant("Lavender");
+                case 2: return PlantFactory::createPlant("Orchid");
+                case 3: return PlantFactory::createPlant("Hibiscus");
+                case 4: return PlantFactory::createPlant("Lily");
+                case 5: return PlantFactory::createPlant("AloeVera");
+                case 6: return PlantFactory::createPlant("Cactus");
+                case 7: return PlantFactory::createPlant("Flytrap");
+                case 8: return PlantFactory::createPlant("Bonsai");
                 default:
                     std::cout << "Invalid option! Please select a number between 1 and 8.\n";
                     break;
@@ -46,7 +47,7 @@ std::shared_ptr<Plant> selectPlant(std::istream& input) {
     }
 }
 
-void careForPlant(const Garden& garden, std::istream& input) {
+void careForPlant(Garden& garden, std::istream& input) {
     int slot;
 
     while (true) {
@@ -99,7 +100,7 @@ void addPlant(Garden& garden, std::istream& input) {
         if (getIntInput(input, slot)) {
             if (slot >= 0 && slot < 8 && garden.isSlotEmpty(slot)) {
                 if (auto plant = selectPlant(input)) {
-                    garden.addPlant(plant, slot);
+                    garden.addPlant(plant->getName(), slot);
                 }
                 break;
             }
@@ -110,7 +111,7 @@ void addPlant(Garden& garden, std::istream& input) {
     }
 }
 
-void calculateHealthIndex(const Garden& garden, std::istream& input) {
+void calculateHealthIndex(Garden& garden, std::istream& input) {
     int slot;
     while (true) {
         std::cout << "Choose a slot of a plant you want to check (0-7): ";

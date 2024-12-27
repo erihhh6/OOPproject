@@ -3,8 +3,9 @@
 #define ACHIEVEMENT_H
 
 #include <iostream>
+#include "Subject.h"
 
-class Achievement {
+class Achievement final : public Observer{
 private:
     /// Static member for cumulative tracking
     static int totalPlantsAdded;
@@ -23,6 +24,8 @@ public:
 
     /// Increment the number of days survived
     static void incrementDaysSurvived();
+
+    void update() override;
 
     /// Overloaded << operator to display achievements
     friend std::ostream& operator<<(std::ostream& os, const Achievement& achievement);

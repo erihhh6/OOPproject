@@ -25,7 +25,6 @@ bool Plant::update() {
         std::cout << name << " has died due to lack of care.\n";
         return true;
     }
-
     return false;
 }
 

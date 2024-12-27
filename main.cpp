@@ -11,8 +11,9 @@ int main() {
     std::ifstream inputFile("x.txt");
     std::istream& input = inputFile.is_open() ? inputFile : std::cin;
 
-    Garden garden;
     Achievement achievements;
+    Garden garden;
+    garden.registerObserver(&achievements);
 
     int choice;
     do {

@@ -14,13 +14,13 @@ bool getIntInput(std::istream& input, int& value);
 std::shared_ptr<Plant> selectPlant(std::istream& input);
 
 /// Function to care for a plant based on user input
-void careForPlant(const Garden& garden, std::istream& input);
+void careForPlant(Garden& garden, std::istream& input);
 
 /// Function to add a plant based on user input
 void addPlant(Garden& garden, std::istream& input);
 
 /// Function to calculate and display the health index of a plant
-void calculateHealthIndex(const Garden& garden, std::istream& input);
+void calculateHealthIndex(Garden& garden, std::istream& input);
 
 /// Function to display the plant needs of a selected plant
 void displaySelectedPlantNeeds(std::istream& input);

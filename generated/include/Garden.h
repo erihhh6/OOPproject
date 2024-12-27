@@ -6,7 +6,7 @@
 #include "Plant.h"
 #include "Achievement.h"
 
-class Garden {
+class Garden : public Subject {
 private:
     std::shared_ptr<Plant> slots[8];
     static constexpr int capacity = 8;
@@ -25,13 +25,13 @@ public:
     friend void swap(Garden& first, Garden& second) noexcept;
 
     /// Function to add a plant to a specific slot
-    void addPlant(const std::shared_ptr<Plant>& plant,  int slot);
+    void addPlant(const std::string& plant,  int slot);
 
     /// Function to care for a specific plant in a slot
-    void careForPlant(int slot,int water,int fertilizer,int light) const;
+    void careForPlant(int slot,int water,int fertilizer,int light);
 
     /// Function to apply general care to all plants by specific conditions
-    void applyGeneralCare() const;
+    void applyGeneralCare();
 
     /// Function to update all plants and remove dead ones.
     void updatePlants();

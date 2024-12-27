@@ -53,6 +53,11 @@ add_executable(${PROJECT_NAME}
         generated/include/functions.h
         generated/src/functions.cpp
         generated/include/CustomExceptions.h
+        generated/include/PlantFactory.h
+        generated/src/PlantFactory.cpp
+        generated/include/Observer.h
+        generated/include/Subject.h
+        generated/src/Subject.cpp
 )
 
 include(cmake/CompilerFlags.cmake)

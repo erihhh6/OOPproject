@@ -17,6 +17,10 @@ void Achievement::incrementDaysSurvived() {
     daysSurvived++;
 }
 
+void Achievement::update() {
+    std::cout<<"Achievements updated \n";
+}
+
 std::ostream& operator<<(std::ostream& os, const Achievement&) {
     os << "\nAchievements:\n";
     os << " Total Plants Added: " << Achievement::totalPlantsAdded << "\n";
