@@ -200,3 +200,4 @@ double Bonsai::calculateHealthIndex() const {
 void Bonsai::doDisplay() const {
     std::cout<<"Bonsai:\n"<<"Water needed : 30\n"<<"Fertilizer needed : 50\n"<<"Light needed : 30\n";
 }
+
