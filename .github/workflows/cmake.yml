@@ -2,10 +2,10 @@ name: C++ CI
 
 on:
   push:
-    branches: ['*'] # Rulează pe toate branch-urile
-    tags: ['*']     # Rulează și pe toate tag-urile
+    branches: ['*']
+    tags: ['*']
   pull_request:
-    branches: ['*'] # Rulează pe toate branch-urile
+    branches: ['*']
   workflow_dispatch:
     inputs:
       build_type:
@@ -37,7 +37,7 @@ jobs:
     name: "Cppcheck"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/') # Rulează doar pe branch-uri
+    if: startsWith(github.ref, 'refs/heads/')
     env:
       CPPCHECK_VER: "2.14.2"
     steps:
@@ -51,7 +51,7 @@ jobs:
     name: "Clang-Tidy"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/') # Rulează doar pe branch-uri
+    if: startsWith(github.ref, 'refs/heads/')
     env:
       CLANG_VER: 18
     steps:
@@ -70,7 +70,7 @@ jobs:
       contents: write
       id-token: write
 
-    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/') # Rulează pe branch-uri și tag-uri
+    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
     env:
       CC: ${{ matrix.c }}
       CXX: ${{ matrix.cxx }}
@@ -139,12 +139,9 @@ jobs:
           echo "ZIP_NAME=$(echo "${GITHUB_REPOSITORY}_${{ env.BUILD_TYPE }}_${{ matrix.os }}_${{ matrix.cxx }}${{ matrix.asan_name }}" | sed 's|/|_|')" >> ${GITHUB_ENV}
 
       - name: Install packages
-        uses: ./.github/actions/install-packages
-        with:
-          packages: |
-            libstdc++-dev
-            clang-18
-            llvm-18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libstdc++-dev clang-18 llvm-18
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
@@ -181,4 +178,4 @@ jobs:
 
       - name: Create release
         uses: ./.github/actions/create-release
-        if: startsWith(github.ref, 'refs/tags/') # Rulează doar pe tag-uri
+        if: startsWith(github.ref, 'refs/tags/') 
