@@ -1,7 +1,7 @@
 #ifndef SUBJECT_H
 #define SUBJECT_H
 
-#include "Observer.h"
+#include <Observer.h>
 #include <vector>
 
 /// Base Subject class that manages a list of observers and notifies them of changes

@@ -4,8 +4,8 @@
 
 #include <iostream>
 #include <memory>
-#include "Garden.h"
-#include "Plant.h"
+#include <Garden.h>
+#include <Plant.h>
 
 /// Function to validate integer input from a stream
 bool getIntInput(std::istream& input, int& value);

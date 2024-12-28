@@ -1,7 +1,7 @@
 #ifndef PLANTFACTORY_H
 #define PLANTFACTORY_H
 
-#include "Plant.h"
+#include <Plant.h>
 
 /// Base PlantFactory class that creates plants based on the provided plant type
 class PlantFactory {

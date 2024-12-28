@@ -1,7 +1,7 @@
 /// Garden.cpp
-#include "Garden.h"
-#include "PlantFactory.h"
-#include "Subject.h"
+#include <Garden.h>
+#include <PlantFactory.h>
+#include <Subject.h>
 
 Garden::Garden() {
     for (auto & slot : slots) {

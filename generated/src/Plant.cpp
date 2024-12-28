@@ -1,5 +1,5 @@
 /// Plant.cpp
-#include "Plant.h"
+#include <Plant.h>
 
 Plant::Plant(std::string name, const int water, const int fertilizer, const int light)
         : name(std::move(name)), water_needed(water), fertilizer_needed(fertilizer),

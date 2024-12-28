@@ -3,8 +3,8 @@
 #define GARDEN_H
 
 #include <memory>
-#include "Plant.h"
-#include "Achievement.h"
+#include <Plant.h>
+#include <Achievement.h>
 
 class Garden : public Subject {
 private:

@@ -58,6 +58,7 @@ add_executable(${PROJECT_NAME}
         generated/include/Observer.h
         generated/include/Subject.h
         generated/src/Subject.cpp
+        generated/include/Timer.h
 )
 
 include(cmake/CompilerFlags.cmake)

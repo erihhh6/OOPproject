@@ -1,4 +1,4 @@
-#include "PlantFactory.h"
+#include <PlantFactory.h>
 
 std::shared_ptr<Plant> PlantFactory::createPlant(const std::string& plantType) {
     if (plantType == "Lavender") return std::make_shared<Lavender>();
