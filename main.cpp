@@ -1,11 +1,11 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
-#include "Garden.h"
-#include "Achievement.h"
-#include "functions.h"
-#include "CustomExceptions.h"
-#include "Timer.h"
+#include <Garden.h>
+#include <Achievement.h>
+#include <functions.h>
+#include <CustomExceptions.h>
+#include <Timer.h>
 
 
 /// MAIN PROGRAM (THE GAME ITSELF)
