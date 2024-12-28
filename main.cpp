@@ -1,10 +1,12 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
-#include <Garden.h>
-#include <Achievement.h>
-#include <functions.h>
-#include <CustomExceptions.h>
+#include "Garden.h"
+#include "Achievement.h"
+#include "functions.h"
+#include "CustomExceptions.h"
+#include "Timer.h"
+
 
 /// MAIN PROGRAM (THE GAME ITSELF)
 int main() {
@@ -14,6 +16,12 @@ int main() {
     Achievement achievements;
     Garden garden;
     garden.registerObserver(&achievements);
+
+    Timer<std::chrono::milliseconds> timer_milliseconds;
+    Timer<std::chrono::seconds> timer_seconds;
+
+    const std::string message = "Welcome to the Garden!";
+    printGardenMessage(message); std::cout << "\n";
 
     int choice;
     do {
@@ -41,7 +49,12 @@ int main() {
                 case 6: std::cout << achievements; break;
                 case 7: calculateHealthIndex(garden,input); break;
                 case 8: displaySelectedPlantNeeds(input); break;
-                case 9: std::cout << "Exiting the game.\n"; break;
+                case 9: {
+                    std::cout << "Exiting the game.\n";
+                     printGardenMessage(timer_milliseconds.elapsed_time().count()); std::cout << " milliseconds passed \n";
+                     printGardenMessage(timer_seconds.elapsed_time().count()); std::cout << " seconds passed \n";
+                    break;
+                }
                 default: throw InvalidMenuOptionException();
             }
         }catch (const GameException& e) {

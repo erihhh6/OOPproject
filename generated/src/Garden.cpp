@@ -84,6 +84,8 @@ double Garden::calculateHealthIndex(int const slot) const {
         return slots[slot]->calculateHealthIndex();
 }
 
+
+
 bool Garden :: isSlotEmpty(const int slot )const { return slot>=0&&slot<capacity&&!slots[slot]; }
 
 std::ostream& operator<<(std::ostream& os, const Garden& garden) {

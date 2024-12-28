@@ -25,6 +25,7 @@ public:
     /// Increment the number of days survived
     static void incrementDaysSurvived();
 
+    /// Overridden update function from the observer class
     void update() override;
 
     /// Overloaded << operator to display achievements

@@ -25,4 +25,10 @@ void calculateHealthIndex(Garden& garden, std::istream& input);
 /// Function to display the plant needs of a selected plant
 void displaySelectedPlantNeeds(std::istream& input);
 
+///Function to print a specific message of a selected data type
+template <typename T>
+void printGardenMessage(const T& message){
+    std::cout << "Garden Message: " << message;
+}
+
 #endif ///FUNCTIONS_H
