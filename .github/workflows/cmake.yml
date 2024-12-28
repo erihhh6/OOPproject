@@ -2,10 +2,10 @@ name: C++ CI
 
 on:
   push:
-    branches: ['*']
-    tags: ['*']
+    branches: ['*'] # Rulează pe toate branch-urile
+    tags: ['*']     # Rulează și pe toate tag-urile
   pull_request:
-    branches: ['*']
+    branches: ['*'] # Rulează pe toate branch-urile
   workflow_dispatch:
     inputs:
       build_type:
@@ -33,93 +33,152 @@ defaults:
     shell: bash
 
 jobs:
-  valgrind:
-    name: "Valgrind: Ubuntu 22.04 GCC 12"
+  cppcheck:
+    name: "Cppcheck"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
+    if: startsWith(github.ref, 'refs/heads/') # Rulează doar pe branch-uri
+    env:
+      CPPCHECK_VER: "2.14.2"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run cppcheck (Valgrind job mock)
-        run: |
-          echo "Running Cppcheck for Valgrind mock job"
-          cppcheck --version
+      - name: Run cppcheck
+        uses: ./.github/actions/cppcheck
 
-  asan:
-    name: "ASan: Ubuntu 22.04 GCC 12"
+  clang-tidy:
+    name: "Clang-Tidy"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
+    if: startsWith(github.ref, 'refs/heads/') # Rulează doar pe branch-uri
+    env:
+      CLANG_VER: 18
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run cppcheck (ASan job mock)
-        run: |
-          echo "Running Cppcheck for ASan mock job"
-          cppcheck --version
+      - name: Run clang-tidy
+        uses: ./.github/actions/clang-tidy
 
-  msan:
-    name: "MSan: Ubuntu 22.04 Clang 18"
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+
+    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/') # Rulează pe branch-uri și tag-uri
+    env:
+      CC: ${{ matrix.c }}
+      CXX: ${{ matrix.cxx }}
+      VSCMD_SKIP_SENDTELEMETRY: 1
+      MINGW_VER: "13.3.0posix-11.0.1-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-13.3.0-mingw-w64msvcrt-11.0.1-r1.7z"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            c: clang-18
+            cxx: clang++-18
+            name: "MSan: Ubuntu 22.04 Clang 18"
+            cmake_flags: "-DUSE_MSAN=ON"
+            cmake_generator: Ninja
+            runs_msan: true
+
+          - os: ubuntu-22.04
+            c: gcc-12
+            cxx: g++-12
+            name: "ASan: Ubuntu 22.04 GCC 12"
+            cmake_flags: "-DUSE_ASAN=ON"
+            cmake_generator: Ninja
+            runs_asan: true
+            asan_name: "-asan"
+
+          - os: ubuntu-22.04
+            c: gcc-12
+            cxx: g++-12
+            name: "Valgrind: Ubuntu 22.04 GCC 12"
+            cmake_generator: Ninja
+            runs_valgrind: true
+
+          - os: macos-14
+            c: clang
+            cxx: clang++
+            name: "macOS 14 Apple Clang 15"
+            cmake_flags: "-DUSE_ASAN=OFF"
+            runs_asan: false
+
+          - os: macos-14
+            c: gcc-13
+            cxx: g++-13
+            name: "macOS 14 GCC 13"
+
+          - os: windows-2022
+            c: cl
+            cxx: cl
+            name: "ASan: Windows 2022 MSVC 19.41"
+            cmake_flags: "-DUSE_ASAN=ON"
+            runs_asan: true
+
+          - os: windows-2022
+            c: gcc
+            cxx: g++-8
+            name: "Windows 2022 MinGW GCC 13"
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run cppcheck (MSan job mock)
+      - name: Set timestamp and zip name
         run: |
-          echo "Running Cppcheck for MSan mock job"
-          cppcheck --version
+          echo "TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)" >> ${GITHUB_ENV}
+          echo "ZIP_NAME=$(echo "${GITHUB_REPOSITORY}_${{ env.BUILD_TYPE }}_${{ matrix.os }}_${{ matrix.cxx }}${{ matrix.asan_name }}" | sed 's|/|_|')" >> ${GITHUB_ENV}
 
-  macos_clang:
-    name: "macOS 14 Apple Clang 15"
-    runs-on: macos-14
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Install packages
+        uses: ./.github/actions/install-packages
+        with:
+          packages: |
+            libstdc++-dev
+            clang-18
+            llvm-18
 
-      - name: Run cppcheck (macOS Clang job mock)
+      - name: Configure CMake
+        uses: ./.github/actions/configure-cmake
+        with:
+          custom_flags: ${{ matrix.cmake_flags }}
+          warnings_as_errors: 'ON'
+
+      - name: Build
         run: |
-          echo "Running Cppcheck for macOS Clang mock job"
-          cppcheck --version
+          bash ./scripts/cmake.sh build -t ${{ env.BUILD_TYPE }}
 
-  macos_gcc:
-    name: "macOS 14 GCC 13"
-    runs-on: macos-14
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Run cppcheck (macOS GCC job mock)
+      - name: Install
         run: |
-          echo "Running Cppcheck for macOS GCC mock job"
-          cppcheck --version
+          bash ./scripts/cmake.sh install -i artifacts -t ${{ env.BUILD_TYPE }}
 
-  windows_msvc:
-    name: "ASan: Windows 2022 MSVC 19.41"
-    runs-on: windows-2022
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Run cppcheck (Windows MSVC job mock)
+      - name: Move artifacts
         run: |
-          echo "Running Cppcheck for Windows MSVC mock job"
-          cppcheck --version
+          mkdir ${{ env.ZIP_NAME }}
+          mv artifacts/${{ env.BIN_DIR }}/* ${{ env.ZIP_NAME }}
+          ls -la ${{ env.ZIP_NAME }}
 
-  windows_mingw:
-    name: "Windows 2022 MinGW GCC 13"
-    runs-on: windows-2022
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Process artifacts
+        uses: ./.github/actions/process-artifacts
 
-      - name: Run cppcheck (Windows MinGW job mock)
-        run: |
-          echo "Running Cppcheck for Windows MinGW mock job"
-          cppcheck --version
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}_${{ env.TIMESTAMP }}
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 30
+
+      - name: Runtime checks
+        uses: ./.github/actions/runtime-checks
+
+      - name: Create release
+        uses: ./.github/actions/create-release
+        if: startsWith(github.ref, 'refs/tags/') # Rulează doar pe tag-uri
