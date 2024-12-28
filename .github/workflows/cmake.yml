@@ -37,7 +37,7 @@ jobs:
     name: "Cppcheck"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/')
+    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
     env:
       CPPCHECK_VER: "2.14.2"
     steps:
@@ -50,7 +50,7 @@ jobs:
     name: "Clang-Tidy"
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/')
+    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
     env:
      CLANG_VER: 18
     steps:
