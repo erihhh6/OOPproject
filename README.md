@@ -129,9 +129,11 @@ The GitHub Actions workflow (`.github/workflows/cmake.yml`) runs on every push a
 
 | Job | What it does |
 |---|---|
-| **Cppcheck** | Static analysis across all source files |
-| **Clang-Tidy** | Lint checks using Clang 18 |
-| **Build × 7** | Compile + run with input on Ubuntu GCC 12 (ASan), Ubuntu Clang 18 (ASan), Ubuntu Valgrind, macOS Clang, macOS GCC 13, Windows MSVC, Windows MinGW |
+| **Ubuntu 22.04 — GCC 12 (ASan)** | Build + run with AddressSanitizer & UBSan |
+| **Ubuntu 22.04 — Valgrind** | Build + run under Valgrind (full leak check) |
+| **macOS 14 — Apple Clang** | Build + run on Apple Silicon |
+| **macOS 14 — GCC 13** | Build + run with GCC on macOS |
+| **Windows 2022 — MSVC** | Build + run with Visual C++ |
 | **Release** | Triggered on git tags — packages binary + HTML + input into a zip and creates a GitHub Release |
 
 ---

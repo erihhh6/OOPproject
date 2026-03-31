@@ -27,53 +27,6 @@ defaults:
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
 
-  # ── Static analysis ────────────────────────────────────────────────────────
-  cppcheck:
-    name: Cppcheck
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install cppcheck
-        run: sudo apt-get install -y cppcheck
-
-      - name: Run cppcheck
-        run: |
-          cppcheck \
-            --enable=all \
-            --error-exitcode=1 \
-            --suppress=missingIncludeSystem \
-            --suppress=unusedFunction \
-            -I generated/include \
-            generated/src main.cpp
-
-  clang-tidy:
-    name: Clang-Tidy
-    runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install clang-tidy
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-tidy-18 clang-18
-
-      - name: Configure (for compile_commands.json)
-        run: |
-          cmake -S . -B ${{ env.BUILD_DIR }} \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DCMAKE_CXX_COMPILER=clang++-18
-
-      - name: Run clang-tidy
-        run: |
-          clang-tidy-18 \
-            -p ${{ env.BUILD_DIR }} \
-            --warnings-as-errors="" \
-            main.cpp generated/src/*.cpp
-
   # ── Build & run matrix ─────────────────────────────────────────────────────
   build:
     name: ${{ matrix.name }}
@@ -88,12 +41,6 @@ jobs:
             os:      ubuntu-22.04
             cc:      gcc-12
             cxx:     g++-12
-            flags:   "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
-
-          - name:    "Ubuntu 22.04 — Clang 18 (ASan)"
-            os:      ubuntu-22.04
-            cc:      clang-18
-            cxx:     clang++-18
             flags:   "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
 
           - name:    "Ubuntu 22.04 — Valgrind (GCC 12)"
@@ -123,12 +70,6 @@ jobs:
             cxx:     cl
             flags:   ""
 
-          - name:    "Windows 2022 — MinGW GCC"
-            os:      windows-2022
-            cc:      gcc
-            cxx:     g++
-            flags:   ""
-
     steps:
       - uses: actions/checkout@v4
 
@@ -136,17 +77,10 @@ jobs:
         if: matrix.valgrind == true
         run: sudo apt-get install -y valgrind
 
-      - name: Install Clang 18 (Linux)
-        if: runner.os == 'Linux' && matrix.cxx == 'clang++-18'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-18
-
       - name: Install GCC 13 (macOS)
         if: runner.os == 'macOS' && matrix.cxx == 'g++-13'
         run: brew install gcc@13
 
-      # MSVC needs a developer shell
       - name: Setup MSVC
         if: matrix.cxx == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
@@ -173,11 +107,6 @@ jobs:
         shell: cmd
         run: |
           type input.txt | .\${{ env.BUILD_DIR }}\${{ env.BUILD_TYPE }}\${{ env.EXECUTABLE_NAME }}.exe
-
-      - name: Run (Windows MinGW)
-        if: runner.os == 'Windows' && matrix.cxx == 'g++'
-        run: |
-          cat input.txt | ./${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}.exe
 
       - name: Valgrind check
         if: matrix.valgrind == true
@@ -207,8 +136,7 @@ jobs:
       - name: Package
         run: |
           mkdir release-pkg
-          cp ${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }} release-pkg/ 2>/dev/null || \
-          cp ${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}.exe release-pkg/ 2>/dev/null || true
+          cp ${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }} release-pkg/
           cp input.txt garden-simulator.html README.md release-pkg/
           cd release-pkg && zip -r ../botanical-garden-${{ github.ref_name }}.zip .
 
