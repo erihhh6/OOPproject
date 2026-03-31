@@ -3,46 +3,60 @@
 #define GARDEN_H
 
 #include <memory>
+#include <string>
 #include <Plant.h>
-#include <Achievement.h>
+#include <Subject.h>
+#include <constants.h>
 
+/// Manages up to MAX_SLOTS plant slots, tracks day/season, and emits Observer events
 class Garden : public Subject {
 private:
-    std::shared_ptr<Plant> slots[8];
-    static constexpr int capacity = 8;
+    std::shared_ptr<Plant> slots[MAX_SLOTS];
+    static constexpr int capacity = MAX_SLOTS;
+
+    int    currentDay{0};
+    Season currentSeason{Season::SPRING};
+
+    /// Maps a day number to the corresponding Season
+    [[nodiscard]] Season seasonFromDay(int day) const;
 
 public:
-    /// Default constructor initializes all slots as empty
     Garden();
-
-    /// Copy constructor
     Garden(const Garden& other);
-
-    /// Assignment operator using copy-and-swap idiom
     Garden& operator=(Garden other);
-
-    /// Swap function
     friend void swap(Garden& first, Garden& second) noexcept;
 
-    /// Function to add a plant to a specific slot
-    void addPlant(const std::string& plant,  int slot);
+    /// Places a new plant (by type name) into an empty slot
+    void addPlant(const std::string& plantType, int slot);
 
-    /// Function to care for a specific plant in a slot
-    void careForPlant(int slot,int water,int fertilizer,int light);
+    /// Applies specified resources to the plant in the given slot
+    void careForPlant(int slot, int water, int fertilizer, int light);
 
-    /// Function to apply general care to all plants by specific conditions
+    /// Applies type-differentiated care to every occupied slot
     void applyGeneralCare();
 
-    /// Function to update all plants and remove dead ones.
-    void updatePlants();
+    /// Advances one day: applies decay, removes dead plants, updates season.
+    /// @return number of plants that died this day
+    [[nodiscard]] int updatePlants();
 
-    /// Function to calculate health index for a plant in a given slot
-    double calculateHealthIndex(int slot) const;
+    /// Returns the health index of the plant in the given slot
+    [[nodiscard]] double calculateHealthIndex(int slot) const;
 
-    /// Check if a specific slot is empty.
+    /// Returns true when slot is valid and unoccupied
     [[nodiscard]] bool isSlotEmpty(int slot) const;
 
-    /// Overloaded operator<< to display garden state.
+    [[nodiscard]] int    getCurrentDay()    const;
+    [[nodiscard]] Season getCurrentSeason() const;
+
+    /// Returns a human-readable season name
+    [[nodiscard]] static const char* seasonName(Season season);
+
+    /// Serialises garden state to a simple pipe-delimited text file
+    void saveToFile(const std::string& filename) const;
+
+    /// Deserialises garden state from a previously saved file
+    [[nodiscard]] static Garden loadFromFile(const std::string& filename);
+
     friend std::ostream& operator<<(std::ostream& os, const Garden& garden);
 };
 

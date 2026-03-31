@@ -9,83 +9,66 @@ bool getIntInput(std::istream& input, int& value) {
     if (input.fail()) {
         input.clear();
         input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid input. Please enter a number.\n";
         return false;
     }
     return true;
 }
 
 std::shared_ptr<Plant> selectPlant(std::istream& input) {
-    int option;
-    std::cout << "Choose the type of plant you want to add:\n";
-    std::cout << "1. Lavender (Flowering)\n";
-    std::cout << "2. Orchid (Flowering)\n";
-    std::cout << "3. Hibiscus (Tropical)\n";
-    std::cout << "4. Lily (Tropical)\n";
-    std::cout << "5. AloeVera (Cacti)\n";
-    std::cout << "6. Cactus (Cacti)\n";
-    std::cout << "7. Flytrap (Exotic)\n";
-    std::cout << "8. Bonsai (Exotic)\n";
-    std::cout << "Enter your option: ";
+    static const char* names[] = {
+        "Lavender", "Orchid", "Hibiscus", "Lily",
+        "AloeVera", "Cactus", "Flytrap",  "Bonsai"
+    };
+    static const char* types[] = {
+        "Flowering", "Flowering", "Tropical", "Tropical",
+        "Cacti",     "Cacti",     "Exotic",   "Exotic"
+    };
 
+    std::cout << "Choose the type of plant to add:\n";
+    for (int i = 0; i < 8; ++i) {
+        std::cout << "  " << (i + 1) << ". " << names[i]
+                  << " (" << types[i] << ")\n";
+    }
+    std::cout << "Enter option: ";
+
+    int option;
     while (true) {
-        if (getIntInput(input, option)) {
-            switch (option) {
-                case 1: return PlantFactory::createPlant("Lavender");
-                case 2: return PlantFactory::createPlant("Orchid");
-                case 3: return PlantFactory::createPlant("Hibiscus");
-                case 4: return PlantFactory::createPlant("Lily");
-                case 5: return PlantFactory::createPlant("AloeVera");
-                case 6: return PlantFactory::createPlant("Cactus");
-                case 7: return PlantFactory::createPlant("Flytrap");
-                case 8: return PlantFactory::createPlant("Bonsai");
-                default:
-                    std::cout << "Invalid option! Please select a number between 1 and 8.\n";
-                    break;
-            }
+        if (getIntInput(input, option) && option >= 1 && option <= 8) {
+            return PlantFactory::createPlant(names[option - 1]);
         }
+        std::cout << "Invalid option. Please select 1-8: ";
     }
 }
 
 void careForPlant(Garden& garden, std::istream& input) {
     int slot;
-
     while (true) {
         try {
-            std::cout << "Choose a slot to care for the plant (0-7): ";
+            std::cout << "Choose a slot to care for (0-7): ";
             if (!getIntInput(input, slot)) throw InvalidInputException();
-
-            if (slot >= 0 && slot < 8) {
-                if (!garden.isSlotEmpty(slot)) break;
-                throw InvalidSlotException();
-            }
+            if (slot >= 0 && slot < MAX_SLOTS && !garden.isSlotEmpty(slot)) break;
             throw InvalidSlotException();
         } catch (const GameException& e) {
-            std::cerr << e.what() << '\n';
+            std::cerr << e.what() << "\n";
         }
     }
 
-    int water, fertilizer, light;
+    int water = 0, fertilizer = 0, light = 0;
 
     while (true) {
-        std::cout << "Enter the amount of water to add : ";
+        std::cout << "Water to add: ";
         if (getIntInput(input, water) && water >= 0) break;
-        if(water < 0)
-            std::cout << "Invalid input. Water must be a non-negative number.\n";
+        std::cout << "Water must be >= 0.\n";
     }
-
     while (true) {
-        std::cout << "Enter the amount of fertilizer to add : ";
+        std::cout << "Fertilizer to add: ";
         if (getIntInput(input, fertilizer) && fertilizer >= 0) break;
-        if(fertilizer < 0)
-            std::cout << "Invalid input. Fertilizer must be a non-negative number.\n";
+        std::cout << "Fertilizer must be >= 0.\n";
     }
-
     while (true) {
-        std::cout << "Enter the amount of light to add : ";
+        std::cout << "Light to add: ";
         if (getIntInput(input, light) && light >= 0) break;
-        if(light < 0)
-            std::cout << "Invalid input. Light must be a non-negative number.\n";
+        std::cout << "Light must be >= 0.\n";
     }
 
     garden.careForPlant(slot, water, fertilizer, light);
@@ -93,20 +76,15 @@ void careForPlant(Garden& garden, std::istream& input) {
 
 void addPlant(Garden& garden, std::istream& input) {
     int slot;
-
     while (true) {
-        std::cout << "Choose a slot (0-7): ";
-
+        std::cout << "Choose an empty slot (0-7): ";
         if (getIntInput(input, slot)) {
-            if (slot >= 0 && slot < 8 && garden.isSlotEmpty(slot)) {
-                if (auto plant = selectPlant(input)) {
-                    garden.addPlant(plant->getName(), slot);
-                }
-                break;
+            if (slot >= 0 && slot < MAX_SLOTS && garden.isSlotEmpty(slot)) {
+                auto plant = selectPlant(input);
+                garden.addPlant(plant->getName(), slot);
+                return;
             }
-            std::cout << "Slot is already occupied or invalid.\n";
-        } else {
-            continue;
+            std::cout << "Slot is occupied or out of range.\n";
         }
     }
 }
@@ -114,71 +92,39 @@ void addPlant(Garden& garden, std::istream& input) {
 void calculateHealthIndex(Garden& garden, std::istream& input) {
     int slot;
     while (true) {
-        std::cout << "Choose a slot of a plant you want to check (0-7): ";
+        std::cout << "Choose a slot (0-7): ";
         if (!getIntInput(input, slot)) continue;
-
-        if (slot >= 0 && slot < 8) {
+        if (slot >= 0 && slot < MAX_SLOTS) {
             if (!garden.isSlotEmpty(slot)) break;
-            std::cout << "There is no plant in this slot. Returning to menu.\n";
+            std::cout << "No plant in that slot.\n";
             return;
         }
-        std::cout << "Slot is invalid. Please choose a slot between 0 and 7.\n";
+        std::cout << "Invalid slot. Choose 0-7.\n";
     }
-    double healthIndex = garden.calculateHealthIndex(slot);
-    std::cout << "Health Index of Plant in Slot " << slot << ": " << healthIndex << "%\n";
+    const double health = garden.calculateHealthIndex(slot);
+    std::cout << "Health Index of slot " << slot << ": " << static_cast<int>(health) << "%\n";
 }
 
+/// Uses PlantFactory to get a temporary plant instance and prints its static needs.
+/// This avoids duplicating hardcoded values outside of the plant constructors.
 void displaySelectedPlantNeeds(std::istream& input) {
-    int option;
-    std::cout << "Choose the type of plant you want to see details for:\n";
-    std::cout << "1. Lavender\n";
-    std::cout << "2. Orchid\n";
-    std::cout << "3. Hibiscus\n";
-    std::cout << "4. Lily\n";
-    std::cout << "5. AloeVera\n";
-    std::cout << "6. Cactus\n";
-    std::cout << "7. Flytrap\n";
-    std::cout << "8. Bonsai\n";
+    static const char* names[] = {
+        "Lavender", "Orchid", "Hibiscus", "Lily",
+        "AloeVera", "Cactus", "Flytrap",  "Bonsai"
+    };
+
+    std::cout << "Choose a plant to see its needs:\n";
+    for (int i = 0; i < 8; ++i) {
+        std::cout << "  " << (i + 1) << ". " << names[i] << "\n";
+    }
     std::cout << "Enter option: ";
+
+    int option;
     while (true) {
-        if (getIntInput(input, option)) {
-            switch (option) {
-                case 1: {
-                    Lavender lavender;
-                    return lavender.display();
-                }
-                case 2: {
-                    Orchid orchid;
-                    return orchid.display();
-                }
-                case 3: {
-                    Hibiscus hibiscus;
-                    return hibiscus.display();
-                }
-                case 4: {
-                    Lily lily;
-                    return lily.display();
-                }
-                case 5: {
-                    AloeVera aloeVera;
-                    return aloeVera.display();
-                }
-                case 6: {
-                    Cactus cactus;
-                    return cactus.display();
-                }
-                case 7: {
-                    Flytrap flytrap;
-                    return flytrap.display();
-                }
-                case 8: {
-                    Bonsai bonsai;
-                    return bonsai.display();
-                }
-                default:
-                    std::cout << "Invalid option! Please select a number between 1 and 8.\n";
-                break;
-            }
+        if (getIntInput(input, option) && option >= 1 && option <= 8) {
+            PlantFactory::createPlant(names[option - 1])->display();
+            return;
         }
+        std::cout << "Invalid option. Please select 1-8: ";
     }
 }

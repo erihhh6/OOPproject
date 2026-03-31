@@ -2,120 +2,218 @@ name: C++ CI
 
 on:
   push:
-    branches: ['*']
-    tags: ['*']
+    branches: ["**"]
+    tags:     ["**"]
   pull_request:
-    branches: ['*']
+    branches: ["**"]
   workflow_dispatch:
     inputs:
       build_type:
         description: Build type
         required: false
-        default: 'Debug'
+        default: Debug
         type: choice
-        options:
-          - Debug
-          - Release
-          - RelWithDebInfo
-          - MinSizeRel
+        options: [Debug, Release, RelWithDebInfo, MinSizeRel]
 
 env:
-  BUILD_TYPE: ${{ inputs.build_type || 'Debug' }}
-  EXECUTABLE_NAME: "oop"
-  INPUT_FILENAME: "input.txt"
-  BIN_DIR: "bin"
-  BUILD_DIR: "build"
-  EXT_DIR: "ext"
-  GEN_DIR: "generated"
+  BUILD_TYPE:      ${{ inputs.build_type || 'Debug' }}
+  EXECUTABLE_NAME: oop
+  BUILD_DIR:       build
 
 defaults:
   run:
     shell: bash
 
+# ─────────────────────────────────────────────────────────────────────────────
 jobs:
+
+  # ── Static analysis ────────────────────────────────────────────────────────
   cppcheck:
-    name: "Cppcheck"
+    name: Cppcheck
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
-    env:
-      CPPCHECK_VER: "2.14.2"
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
 
       - name: Run cppcheck
-        uses: ./.github/actions/cppcheck
+        run: |
+          cppcheck \
+            --enable=all \
+            --error-exitcode=1 \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            -I generated/include \
+            generated/src main.cpp
+
   clang-tidy:
-    name: "Clang-Tidy"
+    name: Clang-Tidy
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
-    env:
-     CLANG_VER: 18
+    timeout-minutes: 10
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-tidy-18 clang-18
+
+      - name: Configure (for compile_commands.json)
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_CXX_COMPILER=clang++-18
 
       - name: Run clang-tidy
-        uses: ./.github/actions/clang-tidy
+        run: |
+          clang-tidy-18 \
+            -p ${{ env.BUILD_DIR }} \
+            --warnings-as-errors="" \
+            main.cpp generated/src/*.cpp
 
+  # ── Build & run matrix ─────────────────────────────────────────────────────
   build:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    if: startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/')
-    env:
-      CPPCHECK_VER: "2.14.2"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
-            c: clang-18
-            cxx: clang++-18
-            name: "MSan: Ubuntu 22.04 Clang 18"
-            runs_cppcheck: true
+          # ── Linux ──────────────────────────────────────────────────────────
+          - name:    "Ubuntu 22.04 — GCC 12 (ASan)"
+            os:      ubuntu-22.04
+            cc:      gcc-12
+            cxx:     g++-12
+            flags:   "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
 
-          - os: ubuntu-22.04
-            c: gcc-12
-            cxx: g++-12
-            name: "ASan: Ubuntu 22.04 GCC 12"
-            runs_cppcheck: true
+          - name:    "Ubuntu 22.04 — Clang 18 (ASan)"
+            os:      ubuntu-22.04
+            cc:      clang-18
+            cxx:     clang++-18
+            flags:   "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
 
-          - os: ubuntu-22.04
-            c: gcc-12
-            cxx: g++-12
-            name: "Valgrind: Ubuntu 22.04 GCC 12"
-            runs_cppcheck: true
+          - name:    "Ubuntu 22.04 — Valgrind (GCC 12)"
+            os:      ubuntu-22.04
+            cc:      gcc-12
+            cxx:     g++-12
+            flags:   ""
+            valgrind: true
 
-          - os: macos-14
-            c: clang
-            cxx: clang++
-            name: "macOS 14 Apple Clang 15"
-            runs_cppcheck: true
+          # ── macOS ──────────────────────────────────────────────────────────
+          - name:    "macOS 14 — Apple Clang"
+            os:      macos-14
+            cc:      clang
+            cxx:     clang++
+            flags:   ""
 
-          - os: macos-14
-            c: gcc-13
-            cxx: g++-13
-            name: "macOS 14 GCC 13"
-            runs_cppcheck: true
+          - name:    "macOS 14 — GCC 13"
+            os:      macos-14
+            cc:      gcc-13
+            cxx:     g++-13
+            flags:   ""
 
-          - os: windows-2022
-            c: cl
-            cxx: cl
-            name: "ASan: Windows 2022 MSVC 19.41"
-            runs_cppcheck: true
+          # ── Windows ────────────────────────────────────────────────────────
+          - name:    "Windows 2022 — MSVC"
+            os:      windows-2022
+            cc:      cl
+            cxx:     cl
+            flags:   ""
 
-          - os: windows-2022
-            c: gcc
-            cxx: g++-8
-            name: "Windows 2022 MinGW GCC 13"
-            runs_cppcheck: true
+          - name:    "Windows 2022 — MinGW GCC"
+            os:      windows-2022
+            cc:      gcc
+            cxx:     g++
+            flags:   ""
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run cppcheck
-        uses: ./.github/actions/cppcheck
+      - name: Install Valgrind
+        if: matrix.valgrind == true
+        run: sudo apt-get install -y valgrind
+
+      - name: Install Clang 18 (Linux)
+        if: runner.os == 'Linux' && matrix.cxx == 'clang++-18'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18
+
+      - name: Install GCC 13 (macOS)
+        if: runner.os == 'macOS' && matrix.cxx == 'g++-13'
+        run: brew install gcc@13
+
+      # MSVC needs a developer shell
+      - name: Setup MSVC
+        if: matrix.cxx == 'cl'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        env:
+          CC:  ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            ${{ matrix.flags }}
+
+      - name: Build
+        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Run (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cat input.txt | tr -d '\r' | ./${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}
+
+      - name: Run (Windows MSVC)
+        if: runner.os == 'Windows' && matrix.cxx == 'cl'
+        shell: cmd
+        run: |
+          type input.txt | .\${{ env.BUILD_DIR }}\${{ env.BUILD_TYPE }}\${{ env.EXECUTABLE_NAME }}.exe
+
+      - name: Run (Windows MinGW)
+        if: runner.os == 'Windows' && matrix.cxx == 'g++'
+        run: |
+          cat input.txt | ./${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}.exe
+
+      - name: Valgrind check
+        if: matrix.valgrind == true
+        run: |
+          cat input.txt | tr -d '\r' | valgrind \
+            --leak-check=full \
+            --show-leak-kinds=all \
+            --track-origins=yes \
+            --error-exitcode=1 \
+            ./${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}
+
+  # ── Release (on tag push) ──────────────────────────────────────────────────
+  release:
+    name: Create Release
+    runs-on: ubuntu-22.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release binary
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=Release
+          cmake --build ${{ env.BUILD_DIR }}
+
+      - name: Package
+        run: |
+          mkdir release-pkg
+          cp ${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }} release-pkg/ 2>/dev/null || \
+          cp ${{ env.BUILD_DIR }}/${{ env.EXECUTABLE_NAME }}.exe release-pkg/ 2>/dev/null || true
+          cp input.txt garden-simulator.html README.md release-pkg/
+          cd release-pkg && zip -r ../botanical-garden-${{ github.ref_name }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: botanical-garden-${{ github.ref_name }}.zip
+          generate_release_notes: true

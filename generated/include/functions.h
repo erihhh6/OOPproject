@@ -1,4 +1,4 @@
-///functions.h
+/// functions.h
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
@@ -6,29 +6,30 @@
 #include <memory>
 #include <Garden.h>
 #include <Plant.h>
+#include <constants.h>
 
-/// Function to validate integer input from a stream
+/// Reads one integer from the stream; clears the stream on failure and returns false
 bool getIntInput(std::istream& input, int& value);
 
-/// Function to select a plant based on user input
+/// Presents a plant-type menu and returns a freshly created plant via PlantFactory
 std::shared_ptr<Plant> selectPlant(std::istream& input);
 
-/// Function to care for a plant based on user input
+/// Prompts for slot + resources and delegates to Garden::careForPlant
 void careForPlant(Garden& garden, std::istream& input);
 
-/// Function to add a plant based on user input
+/// Prompts for slot + plant type and delegates to Garden::addPlant
 void addPlant(Garden& garden, std::istream& input);
 
-/// Function to calculate and display the health index of a plant
+/// Prompts for a slot and prints that plant's current health index
 void calculateHealthIndex(Garden& garden, std::istream& input);
 
-/// Function to display the plant needs of a selected plant
+/// Prints the static needs (water/fertilizer/light) for a user-selected plant type
 void displaySelectedPlantNeeds(std::istream& input);
 
-///Function to print a specific message of a selected data type
+/// Prints a generic garden message of any printable type (template utility)
 template <typename T>
-void printGardenMessage(const T& message){
+void printGardenMessage(const T& message) {
     std::cout << "Garden Message: " << message;
 }
 
-#endif ///FUNCTIONS_H
+#endif /// FUNCTIONS_H

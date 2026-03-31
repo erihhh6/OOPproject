@@ -59,6 +59,7 @@ add_executable(${PROJECT_NAME}
         generated/include/Subject.h
         generated/src/Subject.cpp
         generated/include/Timer.h
+        generated/include/constants.h
 )
 
 include(cmake/CompilerFlags.cmake)

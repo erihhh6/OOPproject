@@ -713,4 +713,13 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,clion,cmake,codeblocks,emacs,gcov,sublimetext,vim,visualstudio,visualstudiocode,xcode
 
+### Project-specific ###
+# CMake build output directory (created by `cmake -B build`)
+build/
 
+# Runtime save files (generated during gameplay, not source)
+garden-save.txt
+garden-save.json
+
+# Scripted input file used during development
+x.txt

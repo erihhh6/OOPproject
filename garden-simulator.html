@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 Botanical Garden Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:        #1a3a1a;
+  --bg-grass:       #2d5a27;
+  --soil:           #5c3d2e;
+  --pot-terra:      #c4784e;
+  --pot-shadow:     #8b4513;
+  --ui-bg:          #f5f0e8;
+  --ui-border:      #8b7355;
+  --ui-text:        #3d2b1f;
+  --accent-green:   #5a9e3a;
+  --accent-gold:    #d4a843;
+  --bar-water:      #4fc3f7;
+  --bar-fertilizer: #81c784;
+  --bar-light:      #ffd54f;
+  --bar-danger:     #e57373;
+  --bar-warning:    #ffb74d;
+  --stage-seedling: #a5d6a7;
+  --stage-growing:  #66bb6a;
+  --stage-mature:   #43a047;
+  --stage-blooming: #f48fb1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg-deep);font-family:'Nunito',sans-serif;color:var(--ui-text);min-height:100vh;overflow-x:hidden}
+
+/* ───── Header ───── */
+header{background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-bottom:2px solid var(--ui-border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}
+header h1{font-family:'Cinzel',serif;color:#c8e6c9;font-size:clamp(1rem,2.5vw,1.4rem);letter-spacing:.05em}
+.header-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.day-badge{background:var(--accent-gold);color:#3d2b1f;padding:4px 12px;border-radius:20px;font-weight:700;font-size:.85rem}
+.season-badge{padding:4px 12px;border-radius:20px;font-weight:700;font-size:.85rem;color:#fff}
+.season-SPRING{background:#66bb6a}
+.season-SUMMER{background:#ff8f00}
+.season-AUTUMN{background:#e65100}
+.season-WINTER{background:#1565c0}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap}
+.hbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#e8f5e9;padding:5px 14px;border-radius:20px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:600;transition:.2s}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.hbtn.gold{background:var(--accent-gold);border-color:var(--accent-gold);color:#3d2b1f}
+
+/* ───── Garden grid ───── */
+.garden-wrap{padding:20px;background:var(--bg-grass);min-height:calc(100vh - 120px)}
+.garden-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:1100px;margin:0 auto}
+
+/* ───── Slot cards ───── */
+.slot-card{background:var(--ui-bg);border:2px solid var(--ui-border);border-radius:14px;overflow:hidden;cursor:pointer;transition:.25s;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.slot-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.slot-card.empty{border-style:dashed;background:rgba(245,240,232,.55)}
+.slot-canvas-wrap{display:flex;justify-content:center;align-items:center;height:110px;background:linear-gradient(180deg,#c8e6c9 0%,#a5d6a7 100%)}
+.slot-card.empty .slot-canvas-wrap{background:linear-gradient(180deg,rgba(200,230,201,.3),rgba(165,214,167,.2))}
+.slot-info{padding:10px 12px}
+.slot-name{font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-stage{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:10px;margin-bottom:6px;color:#fff}
+.stage-SEEDLING{background:var(--accent-green)}
+.stage-GROWING {background:#388e3c}
+.stage-MATURE  {background:#1b5e20}
+.stage-BLOOMING{background:#ad1457}
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:.75rem}
+.bar-label{width:14px;text-align:center;font-size:.9rem}
+.bar-track{flex:1;background:#ddd;border-radius:4px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:.4s}
+.bar-val{width:38px;text-align:right;font-size:.7rem;color:#666}
+.health-row{display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-size:.78rem;font-weight:700}
+.health-val{font-size:.95rem}
+.health-good{color:#2e7d32}.health-warn{color:#e65100}.health-bad{color:#c62828}
+.slot-number{position:absolute;top:6px;left:9px;font-size:.7rem;color:#888;font-weight:700}
+.empty-plus{font-size:2.5rem;color:rgba(90,158,58,.45);line-height:1}
+.empty-hint{font-size:.75rem;color:#aaa;margin-top:4px}
+
+/* ───── Action bar ───── */
+.action-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(26,58,26,.95);backdrop-filter:blur(8px);border-top:2px solid var(--ui-border);padding:12px 20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;z-index:100}
+.abtn{padding:8px 18px;border:none;border-radius:22px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.abtn:hover{filter:brightness(1.15)}
+.abtn-water{background:var(--bar-water);color:#01579b}
+.abtn-care {background:var(--bar-fertilizer);color:#1b5e20}
+.abtn-day  {background:var(--accent-gold);color:#3d2b1f}
+.abtn-save {background:#78909c;color:#fff}
+.abtn-load {background:#546e7a;color:#fff}
+
+/* ───── Modals ───── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.overlay.hidden{display:none}
+.modal{background:var(--ui-bg);border:2px solid var(--ui-border);border-radius:18px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:24px;position:relative}
+.modal h2{font-family:'Cinzel',serif;margin-bottom:16px;color:#2e7d32;font-size:1.2rem}
+.modal-close{position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888;line-height:1}
+.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.plant-option{border:2px solid var(--ui-border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:.2s;background:#fff}
+.plant-option:hover{border-color:var(--accent-green);background:#e8f5e9;transform:scale(1.04)}
+.plant-option canvas{display:block;margin:0 auto 6px}
+.plant-option .pname{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600}
+.plant-option .ptype{font-size:.7rem;color:#888}
+.plant-option .pstats{font-size:.68rem;color:#666;margin-top:4px}
+
+/* Care modal */
+.care-section{display:flex;gap:20px;flex-wrap:wrap}
+.care-preview{flex:0 0 120px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.care-controls{flex:1;min-width:220px}
+.slider-row{margin-bottom:14px}
+.slider-row label{display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px;font-size:.9rem}
+.slider-row input[type=range]{width:100%;accent-color:var(--accent-green)}
+.care-btn{width:100%;padding:10px;background:var(--accent-green);color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;margin-top:8px}
+.care-btn:hover{background:#388e3c}
+.history-box{margin-top:16px;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;font-size:.75rem;color:#555}
+.history-box p{margin-bottom:3px;line-height:1.4}
+
+/* Achievements modal */
+.ach-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.ach-stat{background:#fff;border-radius:10px;padding:10px;text-align:center;border:1px solid #ddd}
+.ach-stat .val{font-size:1.5rem;font-weight:700;color:var(--accent-green)}
+.ach-stat .lbl{font-size:.75rem;color:#888}
+.ach-list{display:grid;gap:8px}
+.ach-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;border:1px solid #ddd;background:#fff}
+.ach-item.unlocked{background:#e8f5e9;border-color:#a5d6a7}
+.ach-icon{font-size:1.4rem;width:28px;text-align:center}
+.ach-text .aname{font-weight:700;font-size:.88rem}
+.ach-text .adesc{font-size:.75rem;color:#777}
+
+/* Toast notifications */
+#toast-container{position:fixed;top:80px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--accent-gold);color:#3d2b1f;padding:10px 16px;border-radius:12px;font-weight:700;font-size:.88rem;max-width:300px;opacity:0;transform:translateX(120px);transition:.4s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(0)}
+
+/* Season transition overlay */
+#season-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:998;pointer-events:none;opacity:0;transition:opacity .5s}
+#season-overlay .season-text{font-family:'Cinzel',serif;font-size:clamp(2rem,6vw,4rem);color:#fff;text-shadow:0 0 40px rgba(255,255,255,.8);text-align:center}
+
+/* Canvas day sweep */
+#sweep-canvas{position:fixed;inset:0;pointer-events:none;z-index:997;opacity:0}
+
+/* Responsive */
+@media(max-width:500px){.garden-grid{grid-template-columns:1fr 1fr}.abtn{font-size:.78rem;padding:7px 12px}}
+
+/* Scrollbar styling */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#ddd;border-radius:3px}
+::-webkit-scrollbar-thumb{background:#a0916c;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ───── Header ───── -->
+<header>
+  <h1>🌿 Botanical Garden Simulator</h1>
+  <div class="header-info">
+    <div class="day-badge" id="day-badge">Day 0</div>
+    <div class="season-badge season-SPRING" id="season-badge">🌸 Spring</div>
+    <button class="hbtn gold" onclick="openAchievements()">🏆 Achievements</button>
+  </div>
+  <div class="header-btns">
+    <button class="hbtn" onclick="saveGame()">💾 Save</button>
+    <label class="hbtn" style="cursor:pointer">📂 Load<input type="file" accept=".json" style="display:none" onchange="loadGame(this)"></label>
+  </div>
+</header>
+
+<!-- ───── Garden grid ───── -->
+<div class="garden-wrap" style="padding-bottom:80px">
+  <div class="garden-grid" id="garden-grid"></div>
+</div>
+
+<!-- ───── Action bar ───── -->
+<div class="action-bar">
+  <button class="abtn abtn-water" onclick="waterAll()">💧 Water All</button>
+  <button class="abtn abtn-care"  onclick="generalCare()">🌱 General Care</button>
+  <button class="abtn abtn-day"   onclick="nextDay()">➡️ Next Day</button>
+  <button class="abtn abtn-save"  onclick="saveGame()">💾 Save</button>
+</div>
+
+<!-- ───── Add Plant Modal ───── -->
+<div class="overlay hidden" id="add-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    <h2>Choose a Plant — Slot <span id="add-slot-label">0</span></h2>
+    <div class="plant-grid" id="plant-grid"></div>
+  </div>
+</div>
+
+<!-- ───── Care Modal ───── -->
+<div class="overlay hidden" id="care-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('care-modal')">✕</button>
+    <h2>Care for Plant — <span id="care-plant-name">Lavender</span></h2>
+    <div class="care-section">
+      <div class="care-preview">
+        <canvas id="care-canvas" width="110" height="130"></canvas>
+        <div class="slot-stage" id="care-stage-badge">Seedling</div>
+        <div class="health-val" id="care-health">100%</div>
+      </div>
+      <div class="care-controls">
+        <div class="slider-row">
+          <label>💧 Water <span id="water-val">15</span></label>
+          <input type="range" id="slider-water" min="0" max="50" value="15" oninput="document.getElementById('water-val').textContent=this.value">
+        </div>
+        <div class="slider-row">
+          <label>🌱 Fertilizer <span id="fert-val">10</span></label>
+          <input type="range" id="slider-fert" min="0" max="30" value="10" oninput="document.getElementById('fert-val').textContent=this.value">
+        </div>
+        <div class="slider-row">
+          <label>☀️ Light <span id="light-val">10</span></label>
+          <input type="range" id="slider-light" min="0" max="40" value="10" oninput="document.getElementById('light-val').textContent=this.value">
+        </div>
+        <button class="care-btn" onclick="applyCareCurrent()">Apply Care</button>
+      </div>
+    </div>
+    <div class="history-box" id="care-history"></div>
+  </div>
+</div>
+
+<!-- ───── Achievements Modal ───── -->
+<div class="overlay hidden" id="ach-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('ach-modal')">✕</button>
+    <h2>🏆 Achievements</h2>
+    <div class="ach-stats" id="ach-stats"></div>
+    <div class="ach-list" id="ach-list"></div>
+  </div>
+</div>
+
+<!-- ───── Toast / Overlays ───── -->
+<div id="toast-container"></div>
+<div id="season-overlay"><div class="season-text" id="season-text"></div></div>
+<canvas id="sweep-canvas"></canvas>
+
+<script>
+// ════════════════════════════════════════════════════
+// CONSTANTS  (mirrors constants.h)
+// ════════════════════════════════════════════════════
+const MAX_SLOTS               = 8;
+const DAYS_PER_SEASON         = 10;
+const DAYS_TO_GROW_SEEDLING   = 3;
+const DAYS_TO_GROW_GROWING    = 5;
+const DAYS_TO_GROW_MATURE     = 7;
+const GROWTH_HEALTH_THRESHOLD = 70.0;
+const DEATH_RATIO             = 0.5;
+
+// ════════════════════════════════════════════════════
+// ENUMS
+// ════════════════════════════════════════════════════
+const GrowthStage = Object.freeze({SEEDLING:0, GROWING:1, MATURE:2, BLOOMING:3});
+const GardenEvent = Object.freeze({PLANT_ADDED:'PLANT_ADDED', PLANT_CARED:'PLANT_CARED', DAY_PASSED:'DAY_PASSED', PLANT_DIED:'PLANT_DIED'});
+const Season = Object.freeze({SPRING:'SPRING', SUMMER:'SUMMER', AUTUMN:'AUTUMN', WINTER:'WINTER'});
+
+const SEASON_ORDER = [Season.SPRING, Season.SUMMER, Season.AUTUMN, Season.WINTER];
+function seasonFromDay(day){ return SEASON_ORDER[Math.floor(day / DAYS_PER_SEASON) % 4]; }
+function seasonName(s){ return {SPRING:'Spring',SUMMER:'Summer',AUTUMN:'Autumn',WINTER:'Winter'}[s]; }
+function seasonEmoji(s){ return {SPRING:'🌸',SUMMER:'☀️',AUTUMN:'🍂',WINTER:'❄️'}[s]; }
+
+// ════════════════════════════════════════════════════
+// PLANT BASE CLASS
+// ════════════════════════════════════════════════════
+class Plant {
+  constructor(name, waterNeeded, fertNeeded, lightNeeded, decayRates) {
+    this.name           = name;
+    this.waterNeeded    = waterNeeded;
+    this.fertNeeded     = fertNeeded;
+    this.lightNeeded    = lightNeeded;
+    this.decayRates     = decayRates; // {water, fertilizer, light}
+    this.currentWater   = waterNeeded;
+    this.currentFert    = fertNeeded;
+    this.currentLight   = lightNeeded;
+    this.stage          = GrowthStage.SEEDLING;
+    this.healthyDays    = 0;
+    this.history        = [];
+  }
+  calculateHealthIndex(){ return 0; } // overridden
+  waterRatio()      { return this.currentWater / this.waterNeeded; }
+  fertRatio()       { return this.currentFert  / this.fertNeeded;  }
+  lightRatio()      { return this.currentLight / this.lightNeeded; }
+
+  care(water, fert, light) {
+    this.currentWater = Math.min(this.currentWater + water, this.waterNeeded * 2);
+    this.currentFert  = Math.min(this.currentFert  + fert,  this.fertNeeded  * 2);
+    this.currentLight = Math.min(this.currentLight + light, this.lightNeeded * 2);
+  }
+
+  updateGrowthStage() {
+    if (this.stage === GrowthStage.BLOOMING) return;
+    if (this.calculateHealthIndex() >= GROWTH_HEALTH_THRESHOLD) {
+      this.healthyDays++;
+      const thresholds = [DAYS_TO_GROW_SEEDLING, DAYS_TO_GROW_GROWING, DAYS_TO_GROW_MATURE];
+      if (this.healthyDays >= thresholds[this.stage]) {
+        this.stage++;
+        this.healthyDays = 0;
+        const names = ['Seedling','Growing','Mature','Blooming'];
+        showToast(`${this.name} is now ${names[this.stage]}! 🌱`);
+      }
+    } else {
+      this.healthyDays = 0;
+    }
+  }
+
+  update(season, day) {
+    const r = this.decayRates;
+    let wm = 1.0, lm = 1.0;
+    if (season === Season.SUMMER) { wm = 1.5; lm = 0.5; }
+    if (season === Season.WINTER) { wm = 0.5; lm = 2.0; }
+    this.currentWater = Math.max(0, this.currentWater - Math.round(r.water      * wm));
+    this.currentFert  = Math.max(0, this.currentFert  - Math.round(r.fertilizer * 1.0));
+    this.currentLight = Math.max(0, this.currentLight - Math.round(r.light      * lm));
+
+    const wDead = this.currentWater < this.waterNeeded  * DEATH_RATIO;
+    const fDead = this.currentFert  < this.fertNeeded   * DEATH_RATIO;
+    const lDead = this.currentLight < this.lightNeeded  * DEATH_RATIO;
+
+    if (wDead || fDead || lDead) {
+      this.history.push(`Day ${day}: Died from lack of care.`);
+      return true;
+    }
+    this.updateGrowthStage();
+    this.history.push(`Day ${day}: Day passed. Health: ${Math.round(this.calculateHealthIndex())}%`);
+    return false;
+  }
+
+  toJSON() {
+    return {
+      name: this.name, currentWater: this.currentWater, currentFert: this.currentFert,
+      currentLight: this.currentLight, stage: this.stage, healthyDays: this.healthyDays,
+      history: [...this.history]
+    };
+  }
+  restoreState(w, f, l, stage, hd) {
+    this.currentWater = w; this.currentFert = f; this.currentLight = l;
+    this.stage = stage; this.healthyDays = hd;
+  }
+  get type(){ return 'Plant'; }
+}
+
+// ════════════════════════════════════════════════════
+// CONCRETE PLANT SUBCLASSES
+// ════════════════════════════════════════════════════
+class Lavender extends Plant {
+  constructor(){ super('Lavender',30,20,70,{water:8,fertilizer:3,light:2}); }
+  get type(){ return 'Flowering'; }
+  calculateHealthIndex(){ return (0.4*this.waterRatio()+0.3*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class Orchid extends Plant {
+  constructor(){ super('Orchid',80,50,50,{water:15,fertilizer:8,light:3}); }
+  get type(){ return 'Flowering'; }
+  calculateHealthIndex(){ return (0.5*this.waterRatio()+0.2*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class Hibiscus extends Plant {
+  constructor(){ super('Hibiscus',70,30,80,{water:12,fertilizer:5,light:2}); }
+  get type(){ return 'Tropical'; }
+  calculateHealthIndex(){ return (0.4*this.waterRatio()+0.3*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class Lily extends Plant {
+  constructor(){ super('Lily',65,40,85,{water:12,fertilizer:5,light:2}); }
+  get type(){ return 'Tropical'; }
+  calculateHealthIndex(){ return (0.4*this.waterRatio()+0.3*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class AloeVera extends Plant {
+  constructor(){ super('AloeVera',20,5,80,{water:1,fertilizer:1,light:5}); }
+  get type(){ return 'Cacti'; }
+  calculateHealthIndex(){ return (0.5*this.waterRatio()+0.2*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class Cactus extends Plant {
+  constructor(){ super('Cactus',10,5,90,{water:1,fertilizer:1,light:5}); }
+  get type(){ return 'Cacti'; }
+  calculateHealthIndex(){ return (0.2*this.waterRatio()+0.3*this.fertRatio()+0.5*this.lightRatio())*100; }
+}
+class Flytrap extends Plant {
+  constructor(){ super('Flytrap',30,30,30,{water:8,fertilizer:10,light:4}); }
+  get type(){ return 'Exotic'; }
+  calculateHealthIndex(){ return (0.4*this.waterRatio()+0.3*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+class Bonsai extends Plant {
+  constructor(){ super('Bonsai',30,50,30,{water:8,fertilizer:10,light:4}); }
+  get type(){ return 'Exotic'; }
+  calculateHealthIndex(){ return (0.3*this.waterRatio()+0.4*this.fertRatio()+0.3*this.lightRatio())*100; }
+}
+
+// ════════════════════════════════════════════════════
+// PLANT FACTORY
+// ════════════════════════════════════════════════════
+class PlantFactory {
+  static MAP = {
+    Lavender: ()=>new Lavender(), Orchid:  ()=>new Orchid(),
+    Hibiscus: ()=>new Hibiscus(), Lily:    ()=>new Lily(),
+    AloeVera: ()=>new AloeVera(), Cactus:  ()=>new Cactus(),
+    Flytrap:  ()=>new Flytrap(),  Bonsai:  ()=>new Bonsai()
+  };
+  static create(type){
+    const fn = PlantFactory.MAP[type];
+    if (!fn) throw new Error(`Invalid plant type: ${type}`);
+    return fn();
+  }
+  static allTypes(){ return Object.keys(PlantFactory.MAP); }
+}
+
+// ════════════════════════════════════════════════════
+// ACHIEVEMENT SYSTEM
+// ════════════════════════════════════════════════════
+const ACHIEVEMENTS = [
+  {id:'first_plant',   name:'Green Thumb',        desc:'Add your first plant',       icon:'🌱', check:s=>s.plantsAdded>=1},
+  {id:'five_plants',   name:'Dedicated Gardener',  desc:'Add 5 plants in total',      icon:'🌿', check:s=>s.plantsAdded>=5},
+  {id:'ten_plants',    name:'Garden Master',       desc:'Add 10 plants in total',     icon:'🌳', check:s=>s.plantsAdded>=10},
+  {id:'ten_care',      name:'Caretaker',           desc:'Care for plants 10 times',   icon:'💧', check:s=>s.plantsCared>=10},
+  {id:'fifty_care',    name:'Nurturing Hand',      desc:'Care for plants 50 times',   icon:'🤲', check:s=>s.plantsCared>=50},
+  {id:'ten_days',      name:'Seasonal Survivor',   desc:'Survive 10 days',            icon:'📅', check:s=>s.daysSurvived>=10},
+  {id:'thirty_days',   name:'Decade Gardener',     desc:'Survive 30 days',            icon:'🗓️', check:s=>s.daysSurvived>=30},
+  {id:'first_loss',    name:'Loss Accepted',       desc:'Lose your first plant',      icon:'🥀', check:s=>s.plantsLost>=1},
+  {id:'five_loss',     name:'Resilient',           desc:'Lose 5 plants & keep going', icon:'💪', check:s=>s.plantsLost>=5},
+  {id:'all_types',     name:'Botanist',            desc:'Collect all 8 plant types',  icon:'🔬', check:s=>s.uniqueTypesGrown>=8},
+];
+
+class AchievementSystem {
+  constructor(){
+    this.stats   = {plantsAdded:0,plantsCared:0,daysSurvived:0,plantsLost:0,uniqueTypesGrown:0};
+    this.unlocked= new Set();
+    this.seenTypes = new Set();
+  }
+  update(event, data){
+    if (event === GardenEvent.PLANT_ADDED){ this.stats.plantsAdded++; if(data?.name){ this.seenTypes.add(data.name); this.stats.uniqueTypesGrown=this.seenTypes.size; } }
+    if (event === GardenEvent.PLANT_CARED) this.stats.plantsCared++;
+    if (event === GardenEvent.DAY_PASSED)  this.stats.daysSurvived++;
+    if (event === GardenEvent.PLANT_DIED)  this.stats.plantsLost++;
+    this.checkUnlocks();
+  }
+  checkUnlocks(){
+    for(const a of ACHIEVEMENTS){
+      if(!this.unlocked.has(a.id) && a.check(this.stats)){
+        this.unlocked.add(a.id);
+        showToast(`${a.icon} Achievement: ${a.name}!`);
+      }
+    }
+  }
+  toJSON(){ return {stats:{...this.stats}, unlocked:[...this.unlocked], seenTypes:[...this.seenTypes]}; }
+  fromJSON(d){
+    this.stats    = {...d.stats};
+    this.unlocked = new Set(d.unlocked||[]);
+    this.seenTypes= new Set(d.seenTypes||[]);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// GARDEN
+// ════════════════════════════════════════════════════
+class Garden {
+  constructor(){
+    this.slots      = new Array(MAX_SLOTS).fill(null);
+    this.currentDay = 0;
+    this.season     = Season.SPRING;
+    this.achievements = new AchievementSystem();
+  }
+
+  addPlant(type, slot){
+    if(slot<0||slot>=MAX_SLOTS||this.slots[slot]) return;
+    const p = PlantFactory.create(type);
+    p.history.push(`Day ${this.currentDay}: Added to slot ${slot}`);
+    this.slots[slot] = p;
+    this.achievements.update(GardenEvent.PLANT_ADDED, {name:p.name});
+  }
+
+  careForPlant(slot, water, fert, light){
+    const p = this.slots[slot]; if(!p) return;
+    p.care(water,fert,light);
+    p.history.push(`Day ${this.currentDay}: Cared for (+${water}💧 +${fert}🌱 +${light}☀️)`);
+    this.achievements.update(GardenEvent.PLANT_CARED);
+  }
+
+  applyGeneralCare(){
+    const typeMap = {Flowering:[10,5,10],Tropical:[15,10,5],Cacti:[5,2,20],Exotic:[8,4,12]};
+    for(let i=0;i<MAX_SLOTS;i++){
+      const p = this.slots[i]; if(!p) continue;
+      const amt = typeMap[p.type] || [10,5,10];
+      p.care(...amt);
+      p.history.push(`Day ${this.currentDay}: General care applied`);
+      this.achievements.update(GardenEvent.PLANT_CARED);
+    }
+  }
+
+  nextDay(){
+    this.currentDay++;
+    const prevSeason = this.season;
+    this.season = seasonFromDay(this.currentDay);
+    const seasonChanged = this.season !== prevSeason;
+
+    let died = 0;
+    for(let i=0;i<MAX_SLOTS;i++){
+      const p = this.slots[i]; if(!p) continue;
+      if(p.update(this.season, this.currentDay)){
+        this.slots[i] = null;
+        died++;
+        this.achievements.update(GardenEvent.PLANT_DIED);
+      }
+    }
+    this.achievements.update(GardenEvent.DAY_PASSED);
+    return {died, seasonChanged};
+  }
+
+  saveToJSON(){
+    return {
+      currentDay: this.currentDay,
+      season: this.season,
+      slots: this.slots.map(p => p ? p.toJSON() : null),
+      achievements: this.achievements.toJSON()
+    };
+  }
+
+  loadFromJSON(data){
+    this.currentDay = data.currentDay || 0;
+    this.season     = data.season || Season.SPRING;
+    this.slots      = (data.slots||[]).map(sd => {
+      if(!sd) return null;
+      const p = PlantFactory.create(sd.name);
+      p.restoreState(sd.currentWater, sd.currentFert, sd.currentLight, sd.stage, sd.healthyDays);
+      p.history = sd.history || [];
+      return p;
+    });
+    if(data.achievements) this.achievements.fromJSON(data.achievements);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// PLANT RENDERER  (Canvas 2D)
+// ════════════════════════════════════════════════════
+const PlantRenderer = {
+  healthColor(h){
+    if(h>65) return '#43a047';
+    if(h>35) return '#fb8c00';
+    return '#e53935';
+  },
+
+  drawPot(ctx, cx, by, w){
+    const pw=w*.55, ph=w*.3, rim=w*.6;
+    ctx.fillStyle='#c4784e';
+    ctx.beginPath();
+    ctx.moveTo(cx-rim/2,by-ph); ctx.lineTo(cx+rim/2,by-ph);
+    ctx.lineTo(cx+pw/2,by);     ctx.lineTo(cx-pw/2,by);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#8b4513';
+    ctx.fillRect(cx-rim/2-2, by-ph-6, rim+4, 7);
+    // soil ellipse
+    ctx.fillStyle='#5c3d2e';
+    ctx.beginPath(); ctx.ellipse(cx,by-ph-2,rim/2-2,5,0,0,Math.PI*2); ctx.fill();
+  },
+
+  stemH(stage, maxH){ return [28,40,54,70][stage] * (maxH/90); },
+
+  drawLavender(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H); const stems=5+stage;
+    ctx.strokeStyle=c; ctx.lineWidth=1.5;
+    for(let i=0;i<stems;i++){
+      const x=cx+(i-(stems-1)/2)*6;
+      ctx.beginPath(); ctx.moveTo(x,by-25); ctx.lineTo(x,by-25-sh); ctx.stroke();
+      // flower spike
+      const fc=health>50?'#9c27b0':'#795548';
+      for(let j=0;j<4+stage;j++){
+        ctx.fillStyle=fc; ctx.beginPath();
+        ctx.ellipse(x,by-25-sh+j*4,2,3,0,0,Math.PI*2); ctx.fill();
+      }
+    }
+  },
+
+  drawOrchid(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H);
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx,by-25); ctx.bezierCurveTo(cx+10,by-25-sh*.4,cx-10,by-25-sh*.7,cx,by-25-sh); ctx.stroke();
+    const petals=3+stage, fc=health>50?'#e91e63':'#795548';
+    for(let i=0;i<petals;i++){
+      const a=(i/petals)*Math.PI*2;
+      const px=cx+Math.cos(a)*12, py=by-25-sh+Math.sin(a)*12;
+      ctx.fillStyle=fc; ctx.beginPath();
+      ctx.ellipse(px,py,6,9,a,0,Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle='#fff9'; ctx.beginPath();
+    ctx.arc(cx,by-25-sh,4,0,Math.PI*2); ctx.fill();
+  },
+
+  drawHibiscus(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H);
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx,by-25); ctx.lineTo(cx,by-25-sh); ctx.stroke();
+    const fc=health>50?'#e53935':'#795548';
+    for(let i=0;i<5;i++){
+      const a=(i/5)*Math.PI*2-Math.PI/2;
+      ctx.fillStyle=fc; ctx.save(); ctx.translate(cx,by-25-sh);
+      ctx.rotate(a); ctx.beginPath();
+      ctx.ellipse(0,-14*(1+stage*.2),7,14,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle='#ffeb3b'; ctx.beginPath();
+    ctx.arc(cx,by-25-sh,4+stage,0,Math.PI*2); ctx.fill();
+  },
+
+  drawLily(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H);
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx,by-25); ctx.lineTo(cx,by-25-sh); ctx.stroke();
+    // Leaves
+    ctx.fillStyle=c+'99';
+    for(let s of [-1,1]){
+      ctx.beginPath(); ctx.ellipse(cx+s*18,by-25-sh*.4,10,5,s*0.6,0,Math.PI*2); ctx.fill();
+    }
+    // Flower
+    const fc=health>50?'#ff7043':'#795548';
+    for(let i=0;i<6;i++){
+      const a=(i/6)*Math.PI*2;
+      ctx.fillStyle=fc; ctx.save(); ctx.translate(cx,by-25-sh);
+      ctx.rotate(a); ctx.beginPath();
+      ctx.ellipse(0,-12,5,12,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle='#ffeb3b'; ctx.beginPath();
+    ctx.arc(cx,by-25-sh,3,0,Math.PI*2); ctx.fill();
+  },
+
+  drawAloeVera(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const leaves=4+stage*2;
+    for(let i=0;i<leaves;i++){
+      const a=(i/leaves)*Math.PI*2-Math.PI/2;
+      const len=25+stage*8;
+      ctx.fillStyle=c;
+      ctx.save(); ctx.translate(cx,by-25);
+      ctx.rotate(a); ctx.beginPath();
+      ctx.moveTo(-3,0); ctx.lineTo(3,0); ctx.lineTo(1,-len); ctx.lineTo(-1,-len);
+      ctx.closePath(); ctx.fill(); ctx.restore();
+      // spikes
+      ctx.strokeStyle='#aaa'; ctx.lineWidth=0.8;
+      for(let j=1;j<4;j++){
+        const px=cx+Math.cos(a)*len*(j/4), py=by-25+Math.sin(a)*len*(j/4);
+        ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px+Math.cos(a-1.5)*5,py+Math.sin(a-1.5)*5); ctx.stroke();
+      }
+    }
+  },
+
+  drawCactus(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const bh=this.stemH(stage,H);
+    // Body
+    ctx.fillStyle=c;
+    ctx.beginPath(); ctx.roundRect(cx-10,by-25-bh,20,bh,5); ctx.fill();
+    // Arms (at mature+)
+    if(stage>=2){
+      ctx.beginPath(); ctx.roundRect(cx-22,by-25-bh*.6,12,bh*.4,4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(cx+10,by-25-bh*.7,12,bh*.45,4); ctx.fill();
+    }
+    // Spines
+    ctx.strokeStyle='#eee'; ctx.lineWidth=1;
+    for(let r=0;r<4;r++) for(let cc=-1;cc<=1;cc+=2){
+      ctx.beginPath();
+      ctx.moveTo(cx+cc*10,by-25-bh*(.2+r*.2));
+      ctx.lineTo(cx+cc*16,by-25-bh*(.22+r*.2));
+      ctx.stroke();
+    }
+  },
+
+  drawFlytrap(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H);
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx,by-25); ctx.lineTo(cx,by-25-sh); ctx.stroke();
+    const traps=1+stage;
+    for(let t=0;t<traps;t++){
+      const tx=cx+(t-(traps-1)/2)*22, ty=by-25-sh+t*8;
+      const fc=health>50?'#c62828':'#795548';
+      // Lower jaw
+      ctx.fillStyle=fc;
+      ctx.beginPath(); ctx.ellipse(tx,ty+5,12,6,0,0,Math.PI); ctx.fill();
+      // Upper jaw
+      ctx.beginPath(); ctx.ellipse(tx,ty+5,12,6,0,Math.PI,Math.PI*2); ctx.fill();
+      // Teeth
+      ctx.fillStyle='#fff9';
+      for(let i=-2;i<=2;i++){
+        ctx.beginPath(); ctx.arc(tx+i*4,ty+5,1.5,0,Math.PI*2); ctx.fill();
+      }
+    }
+  },
+
+  drawBonsai(ctx, health, stage, W, H){
+    const c=this.healthColor(health), cx=W/2, by=H-10;
+    this.drawPot(ctx,cx,by,W);
+    const sh=this.stemH(stage,H);
+    // Trunk
+    ctx.fillStyle='#5d4037'; ctx.beginPath();
+    ctx.moveTo(cx-4,by-25); ctx.lineTo(cx+4,by-25);
+    ctx.lineTo(cx+2,by-25-sh); ctx.lineTo(cx-2,by-25-sh);
+    ctx.closePath(); ctx.fill();
+    // Branches
+    ctx.strokeStyle='#5d4037'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(cx,by-25-sh*.5); ctx.lineTo(cx-16,by-25-sh*.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,by-25-sh*.7); ctx.lineTo(cx+14,by-25-sh*.75); ctx.stroke();
+    // Canopy
+    const blobs=3+stage*2, fc=health>50?c:'#795548';
+    ctx.globalAlpha=0.8;
+    for(let i=0;i<blobs;i++){
+      const a=(i/blobs)*Math.PI*2;
+      const r=12+stage*4;
+      ctx.fillStyle=fc; ctx.beginPath();
+      ctx.arc(cx+Math.cos(a)*r*.7, by-25-sh+Math.sin(a)*r*.5, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  },
+
+  drawEmpty(ctx, W, H){
+    ctx.strokeStyle='rgba(90,158,58,.35)'; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    ctx.strokeRect(10,10,W-20,H-20); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(90,158,58,.3)';
+    ctx.font=`bold ${W*.35}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('+', W/2, H/2);
+  },
+
+  draw(ctx, plant, W, H, breathe){
+    ctx.clearRect(0,0,W,H);
+    if(!plant){ this.drawEmpty(ctx,W,H); return; }
+    const h = Math.max(0, plant.calculateHealthIndex());
+    ctx.save();
+    if(breathe){
+      const sc=1+0.018*Math.sin(Date.now()*.001 + plant._slot*.7);
+      ctx.translate(W/2,H/2); ctx.scale(sc,sc); ctx.translate(-W/2,-H/2);
+    }
+    const fn={Lavender:this.drawLavender,Orchid:this.drawOrchid,Hibiscus:this.drawHibiscus,
+               Lily:this.drawLily,AloeVera:this.drawAloeVera,Cactus:this.drawCactus,
+               Flytrap:this.drawFlytrap,Bonsai:this.drawBonsai}[plant.name];
+    if(fn) fn.call(this,ctx,h,plant.stage,W,H); else this.drawEmpty(ctx,W,H);
+    ctx.restore();
+  }
+};
+
+// ════════════════════════════════════════════════════
+// ANIMATION HELPERS
+// ════════════════════════════════════════════════════
+function showToast(msg, duration=3200){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(), 500); }, duration);
+}
+
+function animateDaySweep(cb){
+  const canvas=document.getElementById('sweep-canvas');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  let x=0; canvas.style.opacity=1;
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const g=ctx.createRadialGradient(x,canvas.height/2,20,x,canvas.height/2,120);
+    g.addColorStop(0,'rgba(255,235,59,.5)'); g.addColorStop(1,'rgba(255,235,59,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+    x+=canvas.width/40;
+    if(x<canvas.width+120) requestAnimationFrame(frame);
+    else{ canvas.style.opacity=0; if(cb) cb(); }
+  }
+  requestAnimationFrame(frame);
+}
+
+function showSeasonTransition(season){
+  const ov=document.getElementById('season-overlay');
+  const txt=document.getElementById('season-text');
+  txt.textContent=`${seasonEmoji(season)} ${seasonName(season)}`;
+  ov.style.background={SPRING:'rgba(102,187,106,.4)',SUMMER:'rgba(255,143,0,.4)',AUTUMN:'rgba(230,81,0,.4)',WINTER:'rgba(21,101,192,.4)'}[season];
+  ov.style.opacity=1;
+  setTimeout(()=>{ ov.style.opacity=0; }, 1800);
+}
+
+function animateWaterDrop(slotIdx){
+  const card=document.getElementById(`card-${slotIdx}`);
+  if(!card) return;
+  const drop=document.createElement('div');
+  Object.assign(drop.style,{
+    position:'absolute',top:'10px',left:'50%',transform:'translateX(-50%)',
+    fontSize:'1.6rem',pointerEvents:'none',zIndex:'10',transition:'top .5s ease-in, opacity .5s'
+  });
+  drop.textContent='💧'; card.appendChild(drop);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    drop.style.top='60px'; drop.style.opacity='0';
+  }));
+  setTimeout(()=>drop.remove(), 600);
+}
+
+// ════════════════════════════════════════════════════
+// UI STATE
+// ════════════════════════════════════════════════════
+const garden = new Garden();
+let activeSlot = -1;
+let animFrame  = null;
+
+// ─── Slot cards ─────────────────────────────────────
+function buildGrid(){
+  const grid=document.getElementById('garden-grid');
+  grid.innerHTML='';
+  for(let i=0;i<MAX_SLOTS;i++){
+    const card=document.createElement('div');
+    card.className='slot-card '+(garden.slots[i]?'':'empty');
+    card.id=`card-${i}`;
+    card.style.position='relative';
+    card.innerHTML=`
+      <div class="slot-number">Slot ${i}</div>
+      <div class="slot-canvas-wrap"><canvas id="canvas-${i}" width="110" height="100"></canvas></div>
+      <div class="slot-info" id="info-${i}"></div>`;
+    card.onclick=()=>onSlotClick(i);
+    grid.appendChild(card);
+  }
+}
+
+function updateCard(i){
+  const p=garden.slots[i];
+  const card=document.getElementById(`card-${i}`);
+  if(!card) return;
+  card.className='slot-card '+(p?'':'empty');
+
+  const info=document.getElementById(`info-${i}`);
+  if(!p){
+    info.innerHTML='<div class="empty-plus">+</div><div class="empty-hint">Click to plant</div>';
+    return;
+  }
+  const h=Math.max(0,Math.min(100,p.calculateHealthIndex()));
+  const hcls=h>65?'health-good':h>35?'health-warn':'health-bad';
+  const stageNames=['Seedling','Growing','Mature','Blooming'];
+  const stageCls=['SEEDLING','GROWING','MATURE','BLOOMING'];
+
+  const wPct=Math.max(0,Math.min(100,p.currentWater/p.waterNeeded*100));
+  const fPct=Math.max(0,Math.min(100,p.currentFert /p.fertNeeded *100));
+  const lPct=Math.max(0,Math.min(100,p.currentLight/p.lightNeeded*100));
+  const barColor=v=>v>60?'var(--bar-water)':v>30?'var(--bar-warning)':'var(--bar-danger)';
+
+  info.innerHTML=`
+    <div class="slot-name">${p.name}</div>
+    <span class="slot-stage stage-${stageCls[p.stage]}">${stageNames[p.stage]}</span>
+    <div class="bar-row"><span class="bar-label">💧</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${wPct}%;background:${barColor(wPct)}"></div></div>
+      <span class="bar-val">${p.currentWater}/${p.waterNeeded}</span>
+    </div>
+    <div class="bar-row"><span class="bar-label">🌱</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${fPct}%;background:${barColor(fPct)}"></div></div>
+      <span class="bar-val">${p.currentFert}/${p.fertNeeded}</span>
+    </div>
+    <div class="bar-row"><span class="bar-label">☀️</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${lPct}%;background:${barColor(lPct)}"></div></div>
+      <span class="bar-val">${p.currentLight}/${p.lightNeeded}</span>
+    </div>
+    <div class="health-row"><span>❤️ Health</span><span class="health-val ${hcls}">${Math.round(h)}%</span></div>`;
+}
+
+function renderAll(){
+  for(let i=0;i<MAX_SLOTS;i++) updateCard(i);
+  document.getElementById('day-badge').textContent=`Day ${garden.currentDay}`;
+  const sb=document.getElementById('season-badge');
+  const s=garden.season;
+  sb.textContent=`${seasonEmoji(s)} ${seasonName(s)}`;
+  sb.className=`season-badge season-${s}`;
+}
+
+// ─── Canvas animation loop ──────────────────────────
+function drawAllCanvases(){
+  for(let i=0;i<MAX_SLOTS;i++){
+    const cv=document.getElementById(`canvas-${i}`);
+    if(!cv) continue;
+    const ctx=cv.getContext('2d');
+    const p=garden.slots[i];
+    if(p) p._slot=i;
+    PlantRenderer.draw(ctx,p,cv.width,cv.height,true);
+  }
+  animFrame=requestAnimationFrame(drawAllCanvases);
+}
+
+// ─── Slot click ─────────────────────────────────────
+function onSlotClick(i){
+  if(!garden.slots[i]) openAddModal(i);
+  else openCareModal(i);
+}
+
+// ═══════════════════════════════
+// ADD PLANT MODAL
+// ═══════════════════════════════
+function openAddModal(slot){
+  activeSlot=slot;
+  document.getElementById('add-slot-label').textContent=slot;
+  const pg=document.getElementById('plant-grid');
+  pg.innerHTML='';
+  for(const type of PlantFactory.allTypes()){
+    const p=PlantFactory.create(type);
+    const div=document.createElement('div');
+    div.className='plant-option';
+    const cv=document.createElement('canvas');
+    cv.width=80; cv.height=80;
+    const ctx=cv.getContext('2d');
+    PlantRenderer.draw(ctx,p,80,80,false);
+    div.appendChild(cv);
+    div.innerHTML+=`
+      <div class="pname">${type}</div>
+      <div class="ptype">${p.type}</div>
+      <div class="pstats">💧${p.waterNeeded} 🌱${p.fertNeeded} ☀️${p.lightNeeded}</div>`;
+    div.onclick=()=>{ garden.addPlant(type,slot); closeModal('add-modal'); renderAll(); };
+    pg.appendChild(div);
+  }
+  document.getElementById('add-modal').classList.remove('hidden');
+}
+
+// ═══════════════════════════════
+// CARE MODAL
+// ═══════════════════════════════
+function openCareModal(slot){
+  activeSlot=slot;
+  const p=garden.slots[slot];
+  if(!p) return;
+  document.getElementById('care-plant-name').textContent=p.name;
+  const stageNames=['Seedling','Growing','Mature','Blooming'];
+  const stageCls=['SEEDLING','GROWING','MATURE','BLOOMING'];
+  const sb=document.getElementById('care-stage-badge');
+  sb.textContent=stageNames[p.stage];
+  sb.className=`slot-stage stage-${stageCls[p.stage]}`;
+  const h=Math.round(Math.max(0,p.calculateHealthIndex()));
+  const hEl=document.getElementById('care-health');
+  hEl.textContent=`${h}%`;
+  hEl.className=`health-val ${h>65?'health-good':h>35?'health-warn':'health-bad'}`;
+
+  // Draw big preview
+  const cv=document.getElementById('care-canvas');
+  const ctx=cv.getContext('2d');
+  PlantRenderer.draw(ctx,p,cv.width,cv.height,false);
+
+  // History
+  const hb=document.getElementById('care-history');
+  hb.innerHTML=p.history.length
+    ?p.history.slice(-20).map(e=>`<p>${e}</p>`).join('')
+    :'<p style="color:#aaa">No history yet.</p>';
+  hb.scrollTop=hb.scrollHeight;
+
+  document.getElementById('care-modal').classList.remove('hidden');
+}
+
+function applyCareCurrent(){
+  const w=parseInt(document.getElementById('slider-water').value);
+  const f=parseInt(document.getElementById('slider-fert').value);
+  const l=parseInt(document.getElementById('slider-light').value);
+  if(activeSlot>=0 && garden.slots[activeSlot]){
+    garden.careForPlant(activeSlot,w,f,l);
+    animateWaterDrop(activeSlot);
+    renderAll();
+    closeModal('care-modal');
+    setTimeout(()=>openCareModal(activeSlot),600);
+  }
+}
+
+// ═══════════════════════════════
+// ACHIEVEMENTS MODAL
+// ═══════════════════════════════
+function openAchievements(){
+  const a=garden.achievements;
+  const stats=document.getElementById('ach-stats');
+  stats.innerHTML=`
+    <div class="ach-stat"><div class="val">${a.stats.plantsAdded}</div><div class="lbl">Plants Added</div></div>
+    <div class="ach-stat"><div class="val">${a.stats.plantsCared}</div><div class="lbl">Care Actions</div></div>
+    <div class="ach-stat"><div class="val">${a.stats.daysSurvived}</div><div class="lbl">Days Survived</div></div>
+    <div class="ach-stat"><div class="val">${a.stats.plantsLost}</div><div class="lbl">Plants Lost</div></div>`;
+  const list=document.getElementById('ach-list');
+  list.innerHTML=ACHIEVEMENTS.map(ac=>{
+    const ul=a.unlocked.has(ac.id);
+    return `<div class="ach-item ${ul?'unlocked':''}">
+      <span class="ach-icon">${ul?ac.icon:'🔒'}</span>
+      <div class="ach-text">
+        <div class="aname">${ac.name}</div>
+        <div class="adesc">${ac.desc}</div>
+      </div></div>`;
+  }).join('');
+  document.getElementById('ach-modal').classList.remove('hidden');
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.add('hidden');
+}
+
+// ════════════════════════════════════════════════════
+// ACTION BAR HANDLERS
+// ════════════════════════════════════════════════════
+function waterAll(){
+  for(let i=0;i<MAX_SLOTS;i++){
+    if(garden.slots[i]){ garden.careForPlant(i,20,0,0); animateWaterDrop(i); }
+  }
+  renderAll(); showToast('💧 Watered all plants!');
+}
+
+function generalCare(){
+  garden.applyGeneralCare();
+  for(let i=0;i<MAX_SLOTS;i++) if(garden.slots[i]) animateWaterDrop(i);
+  renderAll(); showToast('🌱 General care applied!');
+}
+
+function nextDay(){
+  const prevSeason=garden.season;
+  animateDaySweep(()=>{
+    const {died, seasonChanged}=garden.nextDay();
+    renderAll();
+    if(seasonChanged) setTimeout(()=>showSeasonTransition(garden.season), 300);
+    if(died>0) showToast(`🥀 ${died} plant${died>1?'s':''} died today.`, 4000);
+    else showToast(`🌤️ Day ${garden.currentDay} — ${seasonName(garden.season)}`);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// SAVE / LOAD
+// ════════════════════════════════════════════════════
+function saveGame(){
+  const data=garden.saveToJSON();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='garden-save.json';
+  a.click();
+  showToast('💾 Garden saved!');
+}
+
+function loadGame(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      garden.loadFromJSON(JSON.parse(e.target.result));
+      renderAll();
+      showToast('📂 Garden loaded!');
+    }catch(err){
+      showToast('❌ Failed to load save file.');
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+buildGrid();
+renderAll();
+drawAllCanvases();
+
+// Close modals on overlay click
+['add-modal','care-modal','ach-modal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', e=>{
+    if(e.target===e.currentTarget) closeModal(id);
+  });
+});
+
+// Keyboard: Escape closes modals
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    ['add-modal','care-modal','ach-modal'].forEach(closeModal);
+  }
+});
+</script>
+</body>
+</html>
